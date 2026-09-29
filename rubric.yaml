@@ -1,0 +1,167 @@
+# MLCommons Science Benchmarks Ontology -- rating rubric checklist
+# (arXiv:2511.05614, Section III)
+#
+# Scored for the standalone wa-hls4ml benchmark repository (this directory):
+# pretrained-only reference inference + scoring, packaged for NERSC Perlmutter.
+
+benchmark_name: "wa-hls4ml"
+scored_date: "2026-09-29"
+notes: >
+  Re-scored after the repository split. Material change since 2026-08-14: all
+  three reference solutions (MLP, GATv2 GNN, Transformer) now run from their
+  published pretrained weights inside this repo and are scored end to end on the
+  full test (102,484) and exemplar (887) splits (reference_results/). Checkpoint
+  loading is independently verified: the GNN reproduces every per-group cell of
+  paper Table 4 on the labels it was trained on (docs/VALIDATION.md). Caveats
+  that do not flip items but are recorded: (1) runs so far were on a Windows
+  CPU workstation, not yet on Perlmutter; (2) the Transformer checkpoint
+  reproduces Table 4 closely but not exactly; (3) GNN/Transformer were trained on
+  HLS-estimate labels and score poorly on the post-synthesis resource targets --
+  a property of the reference models, documented in README section 4, not a
+  benchmark-definition gap.
+
+# --- Category 1: Software Environment (1 point per true item, max 5) ---
+software_environment:
+  - id: code_available
+    description: "The code is available to reproduce the baseline reference solution."
+    met: true
+    evidence: "All inference, featurization and scoring code is in this repo (src/wa_hls4ml_bench/); weights are fetched by scripts/fetch_weights.py (sha256 in weights/MANIFEST.json); upstream training code linked in reference_solution/README.md."
+  - id: code_complete
+    description: "The provided code is complete."
+    met: true
+    evidence: "The benchmark is scoring-only by design: dataset fetch, featurization, inference for all 3 pretrained reference models, ground-truth extraction, metrics, leaderboard and Slurm workflow are all present. Training code is out of scope here and linked upstream for provenance."
+  - id: code_documented
+    description: "The code itself is well documented."
+    met: true
+    evidence: "Every module has a docstring stating its provenance and CLI; vendored code is marked with its upstream file/commit; docs/PERLMUTTER.md and docs/VALIDATION.md document operation and verification."
+  - id: code_runs_unmodified
+    description: "The code does not require any modifications to run."
+    met: true
+    evidence: "Full pipeline (cache -> predict x3 -> truth -> score -> leaderboard) run unmodified over the complete test and exemplar splits (reference_results/); tests/ (12 tests incl. golden predictions and bit-equivalence with upstream preprocessing) pass. Judgment call: executed on a Windows CPU workstation; the Perlmutter job scripts themselves have not yet been run (docs/VALIDATION.md section 5)."
+  - id: env_specified
+    description: "The environment is either containerized, or environment details and setup instructions are provided."
+    met: true
+    evidence: "requirements.txt / requirements-mlp.txt / pyproject.toml; perlmutter/setup.sh builds both venvs on a named NERSC pytorch module; docs/PERLMUTTER.md."
+
+# --- Category 2: Problem Specification and Constraints (1 point per true item, max 5) ---
+problem_specification:
+  - id: constraints_provided
+    description: "System constraints (power, latency, throughput, etc.) are provided."
+    met: true
+    evidence: "Paper Table 2 (target board, clock period, Vivado version per exemplar synthesis run) and Section 2.1.1 (target FPGA, precision/reuse-factor ranges); recorded per-sample in target_part/vivado_version/hls4ml_version fields (data/SCHEMA.md)."
+  - id: task_clear
+    description: "The benchmark task is clear."
+    met: true
+    evidence: "Paper Section 1 states the task as predicting FPGA resource/latency pre-synthesis; benchmark card Section 1 restates it as input->output transformation."
+  - id: dataset_format_specified
+    description: "The dataset format is clearly specified."
+    met: true
+    evidence: "data/SCHEMA.md documents every field, including which report is ground truth and the sample_id rule."
+  - id: inputs_specified
+    description: "The task inputs are clearly specified."
+    met: true
+    evidence: "README section 1 + data/SCHEMA.md; reference featurization (18 raw -> 33 encoded features) in reference_solution/README.md and src/wa_hls4ml_bench/features.py."
+  - id: outputs_specified
+    description: "The task outputs are clearly specified."
+    met: true
+    evidence: "6 targets from resource_report/latency_report, CSV contract (sample_id + 6 columns) in README section 3 and docs/PERLMUTTER.md."
+
+# --- Category 3: Dataset (4 FAIR points + 1 splits point, max 5) ---
+dataset:
+  fair:
+    - id: findable
+      description: "Each instance is uniquely identified and documented (Findable)."
+      met: true
+      evidence: "meta_data field carries a unique identifier + model name per sample (paper Section 2.1.3); dataset card on HuggingFace."
+    - id: accessible
+      description: "Access is provided through persistent, open protocols (Accessible)."
+      met: true
+      evidence: "Hosted on HuggingFace (fastmachinelearning/wa-hls4ml, fastmachinelearning/wa-hls4ml-projects) and mirrored on the Fermilab American Science Cloud Data Platform, CC-BY-NC 4.0 (paper Section 7, repo README.md)."
+    - id: interoperable
+      description: "Formats and metadata follow community standards (Interoperable)."
+      met: true
+      evidence: "Plain JSON records with a fixed, documented schema; companion Projects dataset uses standard AMD Vitis/Vivado project layout."
+    - id: reusable
+      description: "Versioning with associated preprocessing scripts enables full reproducibility (Reusable)."
+      met: true
+      evidence: "Versioned HuggingFace datasets; the generation pipeline that produced them (wa-hls4ml-search/) is itself public, versioned, and documented (gen_models_documentation.md)."
+  splits_defined:
+    description: "A canonical, non-overlapping train/validation/test split is provided."
+    met: true
+    evidence: "HF splits: Training 478,216 / Validation 102,472 / Test 102,484 (random split of the 683,176 synthetic samples) plus a held-out-by-construction Exemplar set of 887 real architectures, explicitly disjoint from the synthetic generation process."
+
+# --- Category 4: Performance Metrics (Definitions 0-3 + Quality 0-2, max 5) ---
+performance_metrics:
+  definition_level: 3
+  definition_evidence: >
+    R^2, SMAPE, RMSE fully defined with explicit formulas (paper Eq. 1-3) and
+    explicit edge-case handling (SMAPE epsilon=1, chosen as "the smallest
+    strictly positive value the resource and latency variables can have" --
+    paper Section 3.2). Computed per-target and per-subset, not just
+    aggregated (paper Tables 4-5). Implemented in src/wa_hls4ml_bench/score.py (unit-tested edge cases: tests/test_score.py).
+  quality_level: 2
+  quality_evidence: >
+    Three complementary metrics (R^2 = variance captured, SMAPE = scale-
+    comparable relative accuracy, RMSE = outlier-sensitive absolute
+    magnitude), each computed per-target (6 targets) and per-subset
+    (dense/conv1d/conv2d on test; per-architecture on exemplar), plus a
+    visual RPE distribution to catch systematic bias a scalar can't show --
+    together these capture accuracy, relative accuracy, magnitude, and
+    directionality of error. Judgment call: the paper itself flags that RMSE
+    "may reflect a tendency towards smaller absolute predictions rather than
+    better accuracy" (Section 5.2) -- this is a real, self-acknowledged
+    blind spot in RMSE specifically, but it is mitigated (not left silently
+    unaddressed) by always reporting RMSE alongside R^2/SMAPE/RPE rather than
+    RMSE alone, so a reader isn't misled by RMSE in isolation.
+
+# --- Category 5: Reference Solution (1 point per true item, max 5) ---
+reference_solution:
+  - id: publicly_available
+    description: "A reference solution is publicly available."
+    met: true
+    evidence: "3 reference solutions with public weights: rule4ml 0.2.0 (PyPI), GNN + Transformer checkpoints (weights/MANIFEST.json; HF model repo pending publication)."
+  - id: well_documented
+    description: "The provided reference solution is well documented."
+    met: true
+    evidence: "reference_solution/README.md: architecture, input representation, training labels, hyperparameters, parameter counts, measured inference cost, preprocessing, provenance."
+  - id: requirements_listed
+    description: "All hardware and/or software requirements to run the reference solution are listed."
+    met: true
+    evidence: "requirements*.txt pin the inference stack; reference_solution/README.md lists CPU/GPU inference hardware and measured cost; Perlmutter resources per job in docs/PERLMUTTER.md."
+  - id: metrics_evaluated
+    description: "All metrics defined as part of the benchmark are evaluated as part of the reference solution."
+    met: true
+    evidence: "All 3 metrics (plus RPE plots) evaluated for all 3 models, all 6 targets, test (all/dense/conv1d/conv2d) and exemplar (per architecture): reference_results/. Checkpoint correctness verified against paper Table 4 (docs/VALIDATION.md)."
+  - id: baseline_open
+    description: "The baseline solution/model is openly available for study (architecture, hyperparameters, and training code if a neural network)."
+    met: true
+    evidence: "Architectures and hyperparameters in reference_solution/README.md; model code vendored here; training code public upstream (rule4ml, wa_hls4ml_models)."
+
+# --- Category 6: Documentation (1 point per true item, max 5) ---
+documentation:
+  - id: task_explained
+    description: "The task is explained and well documented."
+    met: true
+    evidence: "Paper Section 1 (Introduction) and Section 2 (Dataset); restated in benchmark card README.md Section 1."
+  - id: background_explained
+    description: "The task and benchmark background (scientific and otherwise) is clearly explained."
+    met: true
+    evidence: "Paper Section 1 explains hls4ml, HLS-based FPGA codesign, and why resource prediction is a bottleneck; Section 1.1 situates the work against prior HLS-dataset/benchmark efforts (Table 1)."
+  - id: motivation_explained
+    description: "The motivation for the benchmark is clearly explained."
+    met: true
+    evidence: "Paper Section 1, Fig. 1 (minutes/hours vs. seconds codesign loop comparison); explicit design rationale bullets (standard evaluation suite, structure for optimal utility, open design process)."
+  - id: evaluation_explained
+    description: "The evaluation criteria are clearly explained."
+    met: true
+    evidence: "README section 3 + SUBMISSION.md + docs/PERLMUTTER.md 'Scoring your own model'."
+  - id: paper_exists
+    description: "An academic paper about the benchmark exists."
+    met: true
+    evidence: "arXiv:2511.05615, accepted to ACM TRETS special issue on Open Source Tools; builds on the companion rule4ml paper (arXiv:2408.05314)."
+
+# --- Motif tagging (not scored, but expected metadata) ---
+motifs:
+  scientific_motifs: ["Computational Science & AI"]
+  ai_ml_motif: "Regression"
+  computing_motifs: ["Latency Bound", "Utilization Bound"]

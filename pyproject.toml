@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wa-hls4ml-bench"
+version = "1.0.0"
+description = "wa-hls4ml benchmark: pretrained reference-model inference and scoring for hls4ml FPGA resource/latency estimation"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "pandas>=2.2", "matplotlib>=3.8", "ijson>=3.3"]
+
+[project.optional-dependencies]
+torch = ["torch>=2.6", "torch_geometric==2.6.1"]
+mlp = ["rule4ml==0.2.0"]
+fetch = ["huggingface_hub>=0.24"]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

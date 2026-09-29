@@ -1,0 +1,9 @@
+# GNN / Transformer inference + scoring. On Perlmutter torch comes from the NERSC
+# `pytorch` module (venv created with --system-site-packages); elsewhere install
+# torch>=2.6 first, matching your CUDA.
+torch_geometric==2.6.1
+numpy>=1.26
+pandas>=2.2
+matplotlib>=3.8
+ijson>=3.3
+huggingface_hub>=0.24

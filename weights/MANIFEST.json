@@ -1,0 +1,18 @@
+{
+  "hf_repo": "fastmachinelearning/wa-hls4ml-reference-models",
+  "hf_revision": "main",
+  "files": {
+    "gnn_final_model.pth": {
+      "sha256": "7a8e9c425fa194679626c517d10e06967bc4ff204b863f68e549657129067810",
+      "bytes": 217909055,
+      "model": "FPGA_GNN_GATv2 (5 x GATv2, 5 heads, hidden 512), trained on hls_resource_report labels",
+      "source": "wa-hls4ml-paper working copy (gnn_final_model.pth, 2026-09-25); the checkpoint's own test_metrics match paper Table 4's GNN 'All' row"
+    },
+    "transformer_best_model.pt": {
+      "sha256": "83046ae976ac2dacef6026cbd0c5f04eb5c148fd55fec7cc443419f15e6359e3",
+      "bytes": 12821496,
+      "model": "TransformerRegressor (2 blocks, 8 heads, d=512), trained on hls_resource_report labels",
+      "source": "github.com/jdweitz/wa_hls4ml_models@4aff94b transformer/transformer_best_model.pt"
+    }
+  }
+}

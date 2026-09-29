@@ -1,0 +1,82 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, please cite the paper below."
+title: "wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation"
+authors:
+  - family-names: Hawks
+    given-names: Benjamin
+  - family-names: Weitz
+    given-names: Jason
+  - family-names: Demler
+    given-names: Dmitri
+  - family-names: Tame-Narvaez
+    given-names: Karla
+  - family-names: Plotnikov
+    given-names: Dennis
+  - family-names: Rahimifar
+    given-names: Mohammad Mehdi
+  - family-names: Rahali
+    given-names: Hamza Ezzaoui
+  - family-names: Therrien
+    given-names: Audrey C.
+  - family-names: Sproule
+    given-names: Donovan
+  - family-names: Khoda
+    given-names: Elham E
+  - family-names: Smith
+    given-names: Keegan A.
+  - family-names: Marroquin
+    given-names: Russell
+  - family-names: Di Guglielmo
+    given-names: Giuseppe
+  - family-names: Tran
+    given-names: Nhan
+  - family-names: Duarte
+    given-names: Javier
+  - family-names: Loncar
+    given-names: Vladimir
+date-released: 2025-11-06
+url: "https://arxiv.org/abs/2511.05615"
+identifiers:
+  - type: other
+    value: "arXiv:2511.05615"
+    description: "arXiv preprint"
+license: CC-BY-NC-4.0
+preferred-citation:
+  type: article
+  title: "wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation"
+  authors:
+    - family-names: Hawks
+      given-names: Benjamin
+    - family-names: Weitz
+      given-names: Jason
+    - family-names: Demler
+      given-names: Dmitri
+    - family-names: Tame-Narvaez
+      given-names: Karla
+    - family-names: Plotnikov
+      given-names: Dennis
+    - family-names: Rahimifar
+      given-names: Mohammad Mehdi
+    - family-names: Rahali
+      given-names: Hamza Ezzaoui
+    - family-names: Therrien
+      given-names: Audrey C.
+    - family-names: Sproule
+      given-names: Donovan
+    - family-names: Khoda
+      given-names: Elham E
+    - family-names: Smith
+      given-names: Keegan A.
+    - family-names: Marroquin
+      given-names: Russell
+    - family-names: Di Guglielmo
+      given-names: Giuseppe
+    - family-names: Tran
+      given-names: Nhan
+    - family-names: Duarte
+      given-names: Javier
+    - family-names: Loncar
+      given-names: Vladimir
+  journal: "ACM Transactions on Reconfigurable Technology and Systems (TRETS), Special Issue on Open Source Tools"
+  year: 2025
+  note: "Accepted; in process of publication. arXiv:2511.05615."

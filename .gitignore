@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv*/
+# checkpoints are fetched (scripts/fetch_weights.py), not committed
+weights/*.pth
+weights/*.pt
+# local runs
+results/
+cache/
+data/wa-hls4ml/
+*.out

@@ -1,0 +1,6 @@
+# Baseline MLP (rule4ml v0.2.0 ships the pretrained v2 MLP weights). Kept in its own
+# venv: rule4ml pulls in TensorFlow and its own torch, which must not shadow the NERSC
+# pytorch module used by the GNN/Transformer venv.
+rule4ml==0.2.0
+pandas>=2.2
+ijson>=3.3
