@@ -198,6 +198,9 @@ evaluation protocol in place of per-paper private datasets (paper §1, Table 1).
 
 ## Submitting
 
+A Codabench competition for this benchmark (results submission: upload predictions for
+the test and exemplar splits) is built from [codabench/](codabench/README.md).
+
 See [SUBMISSION.md](SUBMISSION.md) for the required report, and [docs/PERLMUTTER.md](docs/PERLMUTTER.md)
 ("Scoring your own model") for the mechanics.
 

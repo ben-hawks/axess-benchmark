@@ -11,3 +11,6 @@ results/
 cache/
 data/wa-hls4ml/
 *.out
+
+# generated Codabench bundle (codabench/build_bundle.py)
+codabench/build/

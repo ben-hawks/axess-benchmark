@@ -1,0 +1,199 @@
+# AXESS wa-hls4ml Benchmark -- Codabench competition bundle (results submission).
+# Built by ../build_bundle.py, which adds the generated files (reference_data/,
+# solution/, starting_kit/sample_submission.zip, starting_kit/*_sample_ids.csv).
+# See ../README.md for how to build, validate and upload it.
+version: 2
+title: AXESS wa-hls4ml Benchmark
+description: >-
+  Predict the FPGA resources (LUT, FF, DSP, BRAM) and latency (cycles, initiation
+  interval) that logic synthesis reports for an hls4ml-converted neural network, from
+  the network and its hls4ml configuration alone.
+image: logo.png
+contact_email: bhawks@fnal.gov
+registration_auto_approve: True
+docker_image: codalab/codalab-legacy:py312
+
+terms: pages/terms_and_conditions.md
+pages:
+  - title: Overview
+    file: pages/overview.md
+  - title: Data
+    file: pages/data.md
+  - title: Evaluation
+    file: pages/evaluation.md
+
+# Results submission: no ingestion program. Participants upload predictions for both
+# the test and exemplar splits; reference_data/ holds the post-synthesis ground truth.
+tasks:
+  - index: 0
+    name: Resource and latency estimation
+    description: Score test-set and exemplar-set predictions against post-synthesis ground truth.
+    reference_data: reference_data/
+    scoring_program: scoring_program/
+
+# The reference solution (the retrained Transformer's predictions) doubles as the
+# example submission: starting_kit/sample_submission.zip is solution/ zipped.
+solutions:
+  - index: 0
+    tasks:
+      - 0
+    path: solution/
+
+phases:
+  - index: 0
+    name: Open Benchmark
+    description: Open, ongoing benchmark. Each submission is scored on both the test set and the exemplar set.
+    start: 10-02-2026
+    max_submissions_per_day: 5
+    execution_time_limit: 600
+    tasks:
+      - 0
+    starting_kit: starting_kit
+
+leaderboards:
+  - title: Results
+    key: main
+    submission_rule: "Add_And_Delete_Multiple"
+    columns:
+      - title: Test mean R2
+        key: test_mean_r2
+        index: 0
+        sorting: desc
+        precision: 3
+      - title: Test mean SMAPE %
+        key: test_mean_smape
+        index: 1
+        sorting: asc
+        precision: 2
+      - title: Test R2 BRAM
+        key: test_r2_bram
+        index: 2
+        sorting: desc
+        precision: 3
+      - title: Test R2 DSP
+        key: test_r2_dsp
+        index: 3
+        sorting: desc
+        precision: 3
+      - title: Test R2 FF
+        key: test_r2_ff
+        index: 4
+        sorting: desc
+        precision: 3
+      - title: Test R2 LUT
+        key: test_r2_lut
+        index: 5
+        sorting: desc
+        precision: 3
+      - title: Test R2 Cycles
+        key: test_r2_cycles
+        index: 6
+        sorting: desc
+        precision: 3
+      - title: Test R2 II
+        key: test_r2_ii
+        index: 7
+        sorting: desc
+        precision: 3
+      - title: Test SMAPE % BRAM
+        key: test_smape_bram
+        index: 8
+        sorting: asc
+        precision: 2
+      - title: Test SMAPE % DSP
+        key: test_smape_dsp
+        index: 9
+        sorting: asc
+        precision: 2
+      - title: Test SMAPE % FF
+        key: test_smape_ff
+        index: 10
+        sorting: asc
+        precision: 2
+      - title: Test SMAPE % LUT
+        key: test_smape_lut
+        index: 11
+        sorting: asc
+        precision: 2
+      - title: Test SMAPE % Cycles
+        key: test_smape_cycles
+        index: 12
+        sorting: asc
+        precision: 2
+      - title: Test SMAPE % II
+        key: test_smape_ii
+        index: 13
+        sorting: asc
+        precision: 2
+      - title: Exemplar mean R2
+        key: exemplar_mean_r2
+        index: 14
+        sorting: desc
+        precision: 3
+      - title: Exemplar mean SMAPE %
+        key: exemplar_mean_smape
+        index: 15
+        sorting: asc
+        precision: 2
+      - title: Exemplar R2 BRAM
+        key: exemplar_r2_bram
+        index: 16
+        sorting: desc
+        precision: 3
+      - title: Exemplar R2 DSP
+        key: exemplar_r2_dsp
+        index: 17
+        sorting: desc
+        precision: 3
+      - title: Exemplar R2 FF
+        key: exemplar_r2_ff
+        index: 18
+        sorting: desc
+        precision: 3
+      - title: Exemplar R2 LUT
+        key: exemplar_r2_lut
+        index: 19
+        sorting: desc
+        precision: 3
+      - title: Exemplar R2 Cycles
+        key: exemplar_r2_cycles
+        index: 20
+        sorting: desc
+        precision: 3
+      - title: Exemplar R2 II
+        key: exemplar_r2_ii
+        index: 21
+        sorting: desc
+        precision: 3
+      - title: Exemplar SMAPE % BRAM
+        key: exemplar_smape_bram
+        index: 22
+        sorting: asc
+        precision: 2
+      - title: Exemplar SMAPE % DSP
+        key: exemplar_smape_dsp
+        index: 23
+        sorting: asc
+        precision: 2
+      - title: Exemplar SMAPE % FF
+        key: exemplar_smape_ff
+        index: 24
+        sorting: asc
+        precision: 2
+      - title: Exemplar SMAPE % LUT
+        key: exemplar_smape_lut
+        index: 25
+        sorting: asc
+        precision: 2
+      - title: Exemplar SMAPE % Cycles
+        key: exemplar_smape_cycles
+        index: 26
+        sorting: asc
+        precision: 2
+      - title: Exemplar SMAPE % II
+        key: exemplar_smape_ii
+        index: 27
+        sorting: asc
+        precision: 2
+
+# Learn more: https://docs.codabench.org/latest/Organizers/Benchmark_Creation/Competition-Bundle-Structure/
