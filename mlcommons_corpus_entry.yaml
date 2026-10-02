@@ -1,0 +1,145 @@
+# MLCommons Science Benchmarks corpus entry for this benchmark.
+# Format: https://github.com/mlcommons-science/benchmark/blob/main/source/benchmarks-format.yaml
+# Generated with the benchmark-builder skill (references/mlcommons-corpus-format.md) on 2026-10-02.
+#
+# A one-item list, so it can be appended to the corpus as-is. If it goes upstream as a PR,
+# first follow the live CONTRIBUTING.md and docs/benchmark-format.md of
+# mlcommons-science/benchmark (target file, quoting style, `make check`).
+#
+# Published page: the corpus derives the page id from `name` (bin/yaml_manager.py,
+# checked 2026-10-02: spaces -> "_", only letters, "-" and "_" kept, lowercased), so this
+# entry would publish at .../benchmark/axess_wa-hlsml_benchmark/ -- the digit in "hls4ml"
+# is dropped. No existing corpus entry has that id.
+#
+# Synthesized rather than taken from a source: keywords, ai_capability_measured, ml_task
+# (Regression -> Supervised Learning). ml_motif matches task_types, following the corpus's
+# own cataloged precedent over the schema's inconsistent example.
+
+- date: "2026-05-27"            # publication of the benchmark paper (ACM TRETS 19(2))
+  version: "v1.0"
+  last_updated: "2026-10-02"
+  expired: "no"
+  valid: true                   # full runs verified 2026-10-02 (workstation CPU + NERSC Perlmutter)
+  valid_date: "2026-10-02"
+
+  name: "AXESS wa-hls4ml Benchmark"
+  url: "https://github.com/ben-hawks/axess-benchmark"
+  doi: "10.1145/3787490"        # the benchmark paper
+
+  domain:
+    - "Computational Science & AI"
+
+  focus: "Predict the FPGA resources and latency of an hls4ml-converted neural network from the network and its hls4ml configuration, without running synthesis."
+
+  keywords:
+    - "FPGA"
+    - "hls4ml"
+    - "high-level synthesis"
+    - "resource estimation"
+    - "latency estimation"
+    - "surrogate modeling"
+    - "graph neural network"
+    - "transformer"
+    - "hardware-software codesign"
+
+  summary: |
+    hls4ml compiles neural networks into FPGA IP for latency- and power-constrained
+    scientific edge systems such as LHC trigger systems. Getting a design's resource
+    usage and latency from HLS and logic synthesis takes minutes to hours per design,
+    which is too slow for codesign loops. The benchmark asks a surrogate model to predict,
+    from a Keras/QKeras network (model_config) and its hls4ml configuration (hls_config),
+    the post-logic-synthesis LUT, FF, DSP and BRAM counts and the HLS-estimated latency and
+    initiation interval. It uses the 683,176-sample wa-hls4ml dataset (102,484-sample test
+    split, 92,933 with ground truth) plus an 887-sample exemplar set of real scientific
+    architectures that tests out-of-distribution generalization. Metrics are R^2, SMAPE and
+    RMSE per target, overall and per network family. Three pretrained reference solutions
+    (a rule4ml baseline MLP, and a GATv2 GNN and a Transformer retrained on post-synthesis
+    labels) are scored by a scripted pipeline with Slurm workflows, which also produces
+    upload-ready submissions for the benchmark's Codabench competition.
+
+  licensing: "Apache-2.0 (code); CC-BY-NC-4.0 (dataset)"
+
+  task_types:
+    - "Regression"
+
+  ai_capability_measured:
+    - "Surrogate prediction of FPGA resource usage after logic synthesis"
+    - "Surrogate prediction of hardware latency and initiation interval"
+    - "Generalization to real scientific architectures outside the training distribution"
+
+  metrics:
+    - "R^2"
+    - "SMAPE"
+    - "RMSE"
+
+  models:
+    - "Baseline MLP (rule4ml)"
+    - "GNN (GATv2)"
+    - "Transformer"
+
+  ml_motif:
+    - "Regression"
+
+  type: "Benchmark"
+
+  ml_task:
+    - "Supervised Learning"
+
+  notes: |
+    Formalized from the wa-hls4ml paper's dataset and models. The reference GNN and
+    Transformer are retrained on post-synthesis resource labels (the paper's Table 4
+    checkpoints were trained on HLS estimates); see the repo's docs/VALIDATION.md. A
+    Codabench results-submission bundle is built from codabench/ in the repo.
+
+  contact:
+    name: "Ben Hawks"
+    email: "bhawks@fnal.gov"
+
+  cite:
+    - |
+      @article{hawks2026wahls4ml,
+        title={wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation},
+        author={Hawks, Benjamin and Weitz, Jason and Demler, Dmitri and Tame-Narvaez, Karla and Plotnikov, Dennis and Rahimifar, Mohammad Mehdi and Rahali, Hamza Ezzaoui and Therrien, Audrey C. and Sproule, Donovan and Khoda, Elham E. and Smith, Keegan A. and Marroquin, Russell and Di Guglielmo, Giuseppe and Tran, Nhan and Duarte, Javier and Loncar, Vladimir},
+        journal={ACM Transactions on Reconfigurable Technology and Systems},
+        volume={19}, number={2}, pages={1--29}, year={2026}, month=may,
+        publisher={Association for Computing Machinery},
+        doi={10.1145/3787490}, url={https://doi.org/10.1145/3787490}
+      }
+
+  datasets:
+    links:
+      - name: "wa-hls4ml (results dataset, HuggingFace)"
+        url: "https://huggingface.co/datasets/fastmachinelearning/wa-hls4ml"
+      - name: "wa-hls4ml-projects (full Vivado/Vitis projects, HuggingFace)"
+        url: "https://huggingface.co/datasets/fastmachinelearning/wa-hls4ml-projects"
+
+  results:
+    links:
+      - name: "Reference results leaderboard"
+        url: "https://github.com/ben-hawks/axess-benchmark/blob/main/reference_results/LEADERBOARD.md"
+      - name: "Rubric self-score"
+        url: "https://github.com/ben-hawks/axess-benchmark/blob/main/SCORE_REPORT.md"
+
+  fair:
+    reproducible: true          # re-run end to end and matched on a second machine (docs/VALIDATION.md section 7)
+    benchmark_ready: true
+
+  ratings:                      # from rubric.yaml / SCORE_REPORT.md (2026-10-02)
+    software:
+      rating: 5
+      reason: "None"
+    specification:
+      rating: 5
+      reason: "None"
+    dataset:
+      rating: 5
+      reason: "None"
+    metrics:
+      rating: 5
+      reason: "None"
+    reference_solution:
+      rating: 5
+      reason: "None"
+    documentation:
+      rating: 5
+      reason: "None"

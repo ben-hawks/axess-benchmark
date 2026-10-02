@@ -247,6 +247,15 @@ the test and exemplar splits) is built from [codabench/](codabench/README.md).
 See [SUBMISSION.md](SUBMISSION.md) for the required report, and [docs/PERLMUTTER.md](docs/PERLMUTTER.md)
 ("Scoring your own model") for the mechanics.
 
+## Cards and catalog entries
+
+- [MODEL_CARD.md](MODEL_CARD.md): DOE GEAR Model Card (v1 template) for the reference GNN.
+- [genesis_datacard_wa_hls4ml.md](genesis_datacard_wa_hls4ml.md): Genesis Mission Data
+  Card (v1.2) for the wa-hls4ml dataset, generated with the datacard-generator workflow
+  and validated with `linkml-validate`.
+- [mlcommons_corpus_entry.yaml](mlcommons_corpus_entry.yaml): entry for the
+  [MLCommons Science Benchmarks corpus](https://mlcommons-science.github.io/benchmark/).
+
 ## Citation
 
 See [CITATION.cff](CITATION.cff).
