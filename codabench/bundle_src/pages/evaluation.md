@@ -23,7 +23,7 @@ ready-to-upload example submission.
 
 ## Metrics
 
-Computed per target, against post-logic-synthesis ground truth (paper Section 3.2,
+Computed per target, against the ground truth (post-logic-synthesis resources, HLS-estimate latency) (paper Section 3.2,
 Eq. 1–3), separately for the test set and the exemplar set:
 
 | Metric | Definition | Better |

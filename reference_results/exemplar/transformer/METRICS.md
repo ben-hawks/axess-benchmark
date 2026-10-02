@@ -1,4 +1,4 @@
-# transformer on exemplar (post-synthesis ground truth)
+# transformer on exemplar (ground truth: post-synthesis resources, HLS latency)
 
 Scored 886 of 886 ground-truth samples (0 without a prediction).
 

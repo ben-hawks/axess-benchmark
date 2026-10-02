@@ -6,7 +6,8 @@ Reads the participant's two prediction files from the submission:
     predictions_exemplar.csv   one row per exemplar sample
 
 each with columns sample_id, BRAM, DSP, FF, LUT, cycles_max, interval_max. They are
-scored against the hidden post-synthesis ground truth in reference_data/
+scored against the hidden ground truth in reference_data/ (post-synthesis resources,
+HLS-estimate latency)
 (truth_test.csv, truth_exemplar.csv) and the results are written to scores.json, whose
 keys match competition.yaml's leaderboard columns.
 

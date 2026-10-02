@@ -104,7 +104,8 @@ def _num(val) -> float:
 
 
 def truth_post_synthesis(sample: dict) -> dict | None:
-    """Official ground truth: post-logic-synthesis ``resource_report`` + ``latency_report``.
+    """Official ground truth: post-logic-synthesis ``resource_report`` (BRAM/DSP/FF/LUT)
+    + ``latency_report`` (cycles/II; an HLS estimate, the dataset has no post-synthesis latency).
 
     Returns None when the sample has no post-synthesis report (~9.3% of the test set);
     such samples are excluded from scoring, never imputed.

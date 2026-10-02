@@ -44,7 +44,7 @@ only, **not** a further train/eval split:
 | `hls_config` | object | The hls4ml conversion configuration actually used, nested as `{"Model": {"Precision", "ReuseFactor", "Strategy", "BramFactor", "TraceOutput"}, "clock_period", "io_type"}` — `Model.ReuseFactor`/`Strategy`/`Precision` are the **target** values as requested (compare against `model_config`'s per-layer `reuse_factor` to see whether hls4ml honored the request). `Precision` is usually a plain string (e.g. `"ap_fixed<16, 6>"`) but is sometimes a dict (`{"default": "fixed<16,6>"}`) — normalize before use. |
 | `resource_report` | object | Post-**logic**-synthesis resource usage — the ground-truth regression targets: string-valued component counts for `bram`/`dsp`/`ff`/`lut` (lowercase keys; cast to float/int before use). This is the number a full Vivado/Vitis logic-synthesis run reports, not a C-synthesis estimate. **Empty (`{}`) for ~9.3% of the real test set** — those synthesis runs didn't complete or weren't recorded; treat as missing, not zero. |
 | `hls_resource_report` | object | Post-**HLS** (C-synthesis) resource *estimate*, same field names/format as `resource_report`. Confirmed on real data to be a measurably different (generally larger) number than `resource_report` for the same sample — do not use as a fallback ground truth when `resource_report` is present for some samples and missing for others in the same evaluation, or you'll silently mix two different ground-truth definitions. |
-| `latency_report` | object | Post-synthesis latency estimates — the ground-truth regression targets: `cycles_min`, `cycles_max`, `target_clock`, `estimated_clock`, `interval_min`, `interval_max` (all string-valued). Empty alongside `resource_report` for the same ~9.3% of missing samples. |
+| `latency_report` | object | Post-**HLS** (C-synthesis) latency estimates — the dataset has no post-synthesis latency, so these are the ground-truth latency targets: `cycles_min`, `cycles_max`, `target_clock`, `estimated_clock`, `interval_min`, `interval_max` (all string-valued). Empty alongside `resource_report` for the same ~9.3% of missing samples. |
 | `target_part` | string | The FPGA part targeted for HLS and logic synthesis, e.g. `xcu250-figd2104-2L-e` (Alveo U250) or `xc7z020clg400-1` (Pynq-Z2, legacy `2_20` subset only) — a system constraint (see benchmark card Section 1), not a prediction target. Reverse-mappable to a board name via `rule4ml`'s own `parsers/supported_boards.json`. |
 | `vivado_version` | string | The AMD Vivado/Vitis version used to synthesize the sample (e.g. `"2023.2"`, `"2024.2"`) — a top-level key, present and 100%-populated in 6 of the 7 real test-set files, confirmed by direct inspection (uniform per file: `"2024.2"` for `resource`/`conv1d`/`conv2d`/`latency`, `"2023.2"` for `2layer`/`3layer`). **Not present at all in the legacy `2_20` subset** — that subset instead has `backend`/`backend_version` (below) carrying the same information under different key names. |
 | `backend` / `backend_version` | string, `2_20` subset only | Present **only** in the legacy `2_20` subset (not merely `null` elsewhere — the keys are absent entirely from the other 6 subsets). `backend` is the hls4ml backend used (e.g. `"VivadoAccelerator"`); `backend_version` is that subset's equivalent of `vivado_version` (e.g. `"2019.1"`). A field extractor should check `vivado_version` first and fall back to `backend_version` only when `vivado_version` is absent. |
@@ -52,8 +52,8 @@ only, **not** a further train/eval split:
 
 ## Regression targets (for the Performance Metrics element)
 
-Extracted from `resource_report` and `latency_report`, these are the 6 scalar
-values a submission predicts per sample:
+Extracted from `resource_report` (post-logic-synthesis) and `latency_report` (HLS
+estimate), these are the 6 scalar values a submission predicts per sample:
 
 | Target | Source field | Units |
 |---|---|---|
@@ -61,8 +61,8 @@ values a submission predicts per sample:
 | `FF` | `resource_report` | count |
 | `DSP` | `resource_report` | count |
 | `BRAM` | `resource_report` | count |
-| `cycles_max` | `latency_report` | clock cycles |
-| `interval_max` | `latency_report` | clock cycles (initiation interval) |
+| `cycles_max` | `latency_report` (HLS estimate) | clock cycles |
+| `interval_max` | `latency_report` (HLS estimate) | clock cycles (initiation interval) |
 
 `hls_resource_report` is **not** the ground truth. It is the C-synthesis estimate, and it
 exists for more samples (94,430 vs 92,933 in the test set). The paper's original GNN and

@@ -6,7 +6,7 @@ For every model with predictions for both splits
 (``<results>/{test,exemplar}/predictions_<model>.csv``), writes
 ``<results>/codabench/<model>_submission.zip``: ``predictions_test.csv`` and
 ``predictions_exemplar.csv`` at the zip root, holding exactly the scored samples (those
-with post-synthesis ground truth, the same set as codabench/build_bundle.py's hidden
+with ground truth (a post-synthesis resource report), the same set as codabench/build_bundle.py's hidden
 truth) and the columns sample_id, BRAM, DSP, FF, LUT, cycles_max, interval_max.
 
 It applies the same checks as the Codabench scoring program (a finite prediction for

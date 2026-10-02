@@ -1,4 +1,4 @@
-# rule4ml_gnn on test (post-synthesis ground truth)
+# rule4ml_gnn on test (ground truth: post-synthesis resources, HLS latency)
 
 Scored 92933 of 92933 ground-truth samples (0 without a prediction).
 

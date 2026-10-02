@@ -67,7 +67,7 @@ def compute(train: SplitCache) -> dict:
         "label_max": labels.max(axis=0).tolist(),  # prediction cap, original units
     }
     return {
-        "label_source": "resource_report (post-synthesis) + latency_report",
+        "label_source": "resource_report (post-synthesis) + latency_report (HLS estimate)",
         "n_train_samples": int(len(idx)),
         "feature_keys": NUMERICAL_FEATURE_KEYS,
         "feature_means": feature_means,

@@ -73,7 +73,7 @@ Add `--no-mlp` to skip the rule4ml job.
 ```
 $WA_RESULTS/
   LEADERBOARD.md                  # one table per split, all models
-  test/truth.csv                  # post-synthesis ground truth (92,933 rows)
+  test/truth.csv                  # ground truth: post-synthesis resources, HLS latency (92,933 rows)
   test/predictions_<model>.csv    # one row per sample (102,484)
   test/<model>/METRICS.md         # R^2 / SMAPE / RMSE: all, dense, conv1d, conv2d
   test/<model>/metrics.json

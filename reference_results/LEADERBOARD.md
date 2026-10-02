@@ -1,6 +1,6 @@
 # wa-hls4ml leaderboard
 
-Ground truth: post-logic-synthesis `resource_report` + `latency_report`.
+Ground truth: post-logic-synthesis `resource_report` (BRAM/DSP/FF/LUT) + HLS-estimate `latency_report` (cycles, II).
 R^2 per target (higher is better) and SMAPE [%] (lower is better); the full per-group tables are in each `<split>/<model>/METRICS.md`.
 Rows in *italics* are auxiliary comparison models, not reference solutions.
 

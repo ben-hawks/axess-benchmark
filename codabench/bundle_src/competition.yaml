@@ -23,11 +23,11 @@ pages:
     file: pages/evaluation.md
 
 # Results submission: no ingestion program. Participants upload predictions for both
-# the test and exemplar splits; reference_data/ holds the post-synthesis ground truth.
+# the test and exemplar splits; reference_data/ holds the ground truth (post-synthesis resources, HLS latency).
 tasks:
   - index: 0
     name: Resource and latency estimation
-    description: Score test-set and exemplar-set predictions against post-synthesis ground truth.
+    description: Score test-set and exemplar-set predictions against ground truth (post-synthesis resources, HLS latency).
     reference_data: reference_data/
     scoring_program: scoring_program/
 
