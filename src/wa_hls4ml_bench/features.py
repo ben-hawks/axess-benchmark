@@ -4,7 +4,7 @@ Two stages, both reproducing the preprocessing the published checkpoints were tr
 
 1. ``raw_layer_features(sample)`` -> (n_layers, 18) raw per-layer features. Vendored from
    ``ModelProcessor`` in wa_hls4ml_models/dataset/Dataset_to_csvs6_with_ii.py
-   (commit 4aff94b). The logic is kept as close to the original as possible, including its
+   (commit 4aff94b; feature code unchanged through resource-report-retrain, ac394e9). The logic is kept as close to the original as possible, including its
    quirks, because the checkpoints only work on features built exactly this way. The only
    change is that it takes an in-memory sample instead of a one-sample JSON file.
    tests/test_features_equivalence.py checks it against the original.

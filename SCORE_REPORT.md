@@ -1,6 +1,6 @@
 # Rubric score: wa-hls4ml
 
-Scored: 2026-09-29
+Scored: 2026-10-02
 
 | Category | Score |
 |---|---|

@@ -12,6 +12,8 @@ Cache contents (N samples, T = total layers across samples):
     offsets    (N+1,) i64    sample i owns layers[offsets[i]:offsets[i+1]]
     truth_post (N,6)  f64    official ground truth (data.TARGETS order), NaN if missing
     truth_hls  (N,6)  f64    HLS-estimate labels (data.TARGETS order), NaN if missing
+    truth_train (N,6) f64    labels as the reference models were trained on them
+                             (data.truth_training_labels), NaN if the sample was skipped
     feat_ok    (N,)   bool   False if feature extraction failed (sample gets no prediction)
 """
 
@@ -46,25 +48,27 @@ def _process(item):
     nan6 = [np.nan] * 6
     tp = D.truth_post_synthesis(sample)
     th = D.truth_hls_estimate(sample)
+    tt = D.truth_training_labels(sample)
     return (
         sid, subset, layers, ok,
         [tp[t] for t in D.TARGETS] if tp else nan6,
         [th[t] for t in D.TARGETS] if th else nan6,
+        [tt[t] for t in D.TARGETS] if tt else nan6,
     )
 
 
 def build_cache(data_root: str, split: str, out_path: str, workers: int = 1) -> dict:
     t0 = time.time()
-    ids, subsets, layer_blocks, oks, post, hls = [], [], [], [], [], []
+    ids, subsets, layer_blocks, oks, post, hls, train = [], [], [], [], [], [], []
     items = D.iter_samples(data_root, split)
     if workers > 1:
         with Pool(workers, initializer=_quiet) as pool:
             results = pool.imap(_process, items, chunksize=256)  # imap preserves order
             for r in results:
-                _collect(r, ids, subsets, layer_blocks, oks, post, hls)
+                _collect(r, ids, subsets, layer_blocks, oks, post, hls, train)
     else:
         for r in map(_process, items):
-            _collect(r, ids, subsets, layer_blocks, oks, post, hls)
+            _collect(r, ids, subsets, layer_blocks, oks, post, hls, train)
 
     if len(set(ids)) != len(ids):
         raise ValueError(f"{split}: meta_data.uuid is not unique within the split")
@@ -80,6 +84,7 @@ def build_cache(data_root: str, split: str, out_path: str, workers: int = 1) -> 
         offsets=offsets,
         truth_post=np.array(post, dtype=float),
         truth_hls=np.array(hls, dtype=float),
+        truth_train=np.array(train, dtype=float),
         feat_ok=np.array(oks, dtype=bool),
     )
     summary = {
@@ -88,6 +93,7 @@ def build_cache(data_root: str, split: str, out_path: str, workers: int = 1) -> 
         "n_feature_failures": int((~np.array(oks)).sum()),
         "n_post_synthesis_truth": int(np.isfinite(np.array(post)[:, 0]).sum()),
         "n_hls_estimate_truth": int(np.isfinite(np.array(hls)[:, 0]).sum()),
+        "n_training_labels": int(np.isfinite(np.array(train)[:, 0]).sum()),
         "max_layers": int(lengths.max()) if len(lengths) else 0,
         "seconds": round(time.time() - t0, 1),
     }
@@ -95,14 +101,15 @@ def build_cache(data_root: str, split: str, out_path: str, workers: int = 1) -> 
     return summary
 
 
-def _collect(r, ids, subsets, layer_blocks, oks, post, hls):
-    sid, subset, layers, ok, tp, th = r
+def _collect(r, ids, subsets, layer_blocks, oks, post, hls, train):
+    sid, subset, layers, ok, tp, th, tt = r
     ids.append(sid)
     subsets.append(subset)
     layer_blocks.append(layers)
     oks.append(ok)
     post.append(tp)
     hls.append(th)
+    train.append(tt)
 
 
 class SplitCache:
@@ -116,6 +123,7 @@ class SplitCache:
         self.offsets = z["offsets"]
         self.truth_post = z["truth_post"]
         self.truth_hls = z["truth_hls"]
+        self.truth_train = z["truth_train"]
         self.feat_ok = z["feat_ok"]
 
     def __len__(self):

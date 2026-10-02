@@ -23,7 +23,8 @@ HERE = os.path.dirname(__file__)
 FIXTURES = os.path.join(HERE, "fixtures", "data")
 WEIGHTS = os.environ.get("WA_WEIGHTS", os.path.join(HERE, "..", "weights"))
 HAVE_WEIGHTS = all(os.path.exists(os.path.join(WEIGHTS, f)) for f in
-                   ("gnn_final_model.pth", "transformer_best_model.pt", "normalization_stats.json"))
+                   ("gnn_resource_report_final_model.pth", "transformer_resource_report_final_model.pt",
+                    "normalization_stats.json"))
 
 
 @pytest.fixture(scope="module")

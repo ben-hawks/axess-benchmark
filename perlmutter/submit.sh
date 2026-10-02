@@ -3,12 +3,13 @@
 #
 #   featurize (cpu) --> infer_gpu (gpu: GNN + Transformer) --+
 #                                                            +--> score (cpu)
-#                       infer_mlp (cpu: baseline MLP) -------+
+#                       infer_mlp (cpu: rule4ml MLP + GNN) --+
 #
 # Usage (from the repo root, on a login node, after perlmutter/setup.sh):
 #     bash perlmutter/submit.sh -A <nersc_project>        # e.g. -A m1234
 #     bash perlmutter/submit.sh -A <nersc_project> --no-mlp
-# Extra arguments before --no-mlp are passed to every sbatch call (e.g. -q debug).
+# --no-mlp skips the rule4ml job (baseline MLP + auxiliary rule4ml GNN). Other arguments
+# are passed to every sbatch call (e.g. -q debug).
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 source perlmutter/env.sh
@@ -22,7 +23,7 @@ if ! printf '%s\n' "${SB_ARGS[@]:-}" | grep -qE '^(-A|--account)'; then
     echo "error: pass your NERSC project, e.g. bash perlmutter/submit.sh -A m1234" >&2
     exit 2
 fi
-for f in "$WA_WEIGHTS/gnn_final_model.pth" "$WA_WEIGHTS/transformer_best_model.pt" \
+for f in "$WA_WEIGHTS/gnn_resource_report_final_model.pth" "$WA_WEIGHTS/transformer_resource_report_final_model.pt" \
          "$WA_WEIGHTS/normalization_stats.json" "$WA_DATA/test"; do
     [ -e "$f" ] || { echo "error: missing $f -- run: bash perlmutter/setup.sh" >&2; exit 1; }
 done

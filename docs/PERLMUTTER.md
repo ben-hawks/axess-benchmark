@@ -11,7 +11,7 @@ here trains a model: the benchmark scores the published pretrained checkpoints.
 |---|---|---|
 | `WA_ROOT` | `$SCRATCH/wa-hls4ml` | everything below |
 | `WA_DATA` | `$WA_ROOT/data/wa-hls4ml` | HF dataset snapshot (test + exemplar, ~0.7 GB) |
-| `WA_WEIGHTS` | `$WA_ROOT/weights` | 2 checkpoints (~230 MB) + `normalization_stats.json` |
+| `WA_WEIGHTS` | `$WA_ROOT/weights` | 2 checkpoints (~230 MB, from the wa_hls4ml_models GitHub release) + `normalization_stats.json` |
 | `WA_CACHE` | `$WA_ROOT/cache` | featurized splits (`test.npz` ~95 MB) |
 | `WA_RESULTS` | `$WA_ROOT/results` | predictions, per-model `METRICS.md`, `LEADERBOARD.md` |
 | `WA_VENV`, `WA_VENV_MLP` | `$WA_ROOT/venv-torch`, `$WA_ROOT/venv-mlp` | Python envs |
@@ -33,10 +33,10 @@ bash perlmutter/setup.sh        # venvs + dataset + weights
 - **`venv-torch`**: `module load pytorch` plus `--system-site-packages`, then
   `requirements.txt` (torch_geometric, pandas, ijson, ...). It reuses NERSC's CUDA build
   of torch and is used for the GNN, Transformer, featurization, and scoring.
-- **`venv-mlp`**: plain `module load python`, then `rule4ml==0.2.0` (TensorFlow). It's
-  separate so TensorFlow's and rule4ml's own torch dependency can't shadow the module's
-  torch. `triton` is removed from it (it can segfault on import on CPU nodes, and the
-  MLP never uses it).
+- **`venv-mlp`**: plain `module load python`, then `rule4ml==0.2.0`, used for the baseline MLP
+  (TensorFlow) and the auxiliary rule4ml GNN (CPU torch). It's separate so TensorFlow's and
+  rule4ml's own torch dependency can't shadow the module's torch. `triton` is removed from it
+  (it can segfault on import on CPU nodes, and neither rule4ml model uses it).
 
 Check the install before submitting anything (about a minute, CPU is fine):
 
@@ -62,11 +62,11 @@ This submits a dependency chain:
 |---|---|---|---|
 | `featurize.sbatch` | CPU shared, 64 cores | a few minutes | JSON -> `$WA_CACHE/<split>.npz` |
 | `infer_gpu.sbatch` | 1 A100 (shared GPU) | a few minutes | GNN + Transformer predictions |
-| `infer_mlp.sbatch` | CPU shared, 32 cores | ~15-30 min | baseline MLP predictions (runs in parallel with the above) |
+| `infer_mlp.sbatch` | CPU shared, 32 cores | ~30-60 min | rule4ml baseline MLP + auxiliary rule4ml GNN predictions (runs in parallel with the above) |
 | `score.sbatch` | CPU shared, 4 cores | < 5 min | truth CSVs, per-model metrics, `LEADERBOARD.md` |
 
 Extra `sbatch` flags pass through, e.g. `bash perlmutter/submit.sh -A m1234 -q debug`.
-Add `--no-mlp` to skip the TensorFlow baseline.
+Add `--no-mlp` to skip the rule4ml job.
 
 ## 3. Results
 

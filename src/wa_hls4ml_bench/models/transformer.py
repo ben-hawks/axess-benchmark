@@ -1,7 +1,8 @@
 """Transformer reference model.
 
-Vendored from wa_hls4ml_models/transformer/model.py (commit 4aff94b), unchanged.
-The published ``transformer_best_model.pt`` is a bare state_dict for the defaults below.
+Vendored from wa_hls4ml_models/transformer/model.py (commit 4aff94b; unchanged through
+resource-report-retrain, ac394e9). The published checkpoint is a bare state_dict for the
+defaults below.
 """
 
 import torch

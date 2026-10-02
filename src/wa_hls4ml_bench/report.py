@@ -13,6 +13,9 @@ import os
 
 from .score import TARGETS
 
+# Scored for comparison only; not reference solutions (reference_solution/README.md).
+AUXILIARY = {"rule4ml_gnn"}
+
 
 def _fmt(x, spec):
     return "N/A" if x is None or (isinstance(x, float) and math.isnan(x)) else format(x, spec)
@@ -22,7 +25,8 @@ def build(results_dir: str) -> str:
     lines = ["# wa-hls4ml leaderboard", "",
              "Ground truth: post-logic-synthesis `resource_report` + `latency_report`.",
              "R^2 per target (higher is better) and SMAPE [%] (lower is better); "
-             "the full per-group tables are in each `<split>/<model>/METRICS.md`.", ""]
+             "the full per-group tables are in each `<split>/<model>/METRICS.md`.",
+             "Rows in *italics* are auxiliary comparison models, not reference solutions.", ""]
     for split_dir in sorted(glob.glob(os.path.join(results_dir, "*", ""))):
         split = os.path.basename(os.path.normpath(split_dir))
         runs = sorted(glob.glob(os.path.join(split_dir, "*", "metrics.json")))
@@ -36,6 +40,8 @@ def build(results_dir: str) -> str:
             with open(path) as f:
                 m = json.load(f)
             model = os.path.basename(os.path.dirname(path))
+            if model in AUXILIARY:
+                model = f"*{model} (auxiliary)*"
             res = m["groups"]["all"]
             cov = m["coverage"]
             r2 = [res[t]["r_squared"] for t in TARGETS]

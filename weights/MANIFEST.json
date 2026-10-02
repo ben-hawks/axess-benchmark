@@ -1,18 +1,18 @@
 {
-  "hf_repo": "fastmachinelearning/wa-hls4ml-reference-models",
-  "hf_revision": "main",
+  "source": "https://github.com/ben-hawks/wa_hls4ml_models/releases/tag/resource-report-retrain",
+  "source_commit": "ac394e9df3c774ada57406f6c45b910e9249314e",
   "files": {
-    "gnn_final_model.pth": {
-      "sha256": "7a8e9c425fa194679626c517d10e06967bc4ff204b863f68e549657129067810",
+    "gnn_resource_report_final_model.pth": {
+      "url": "https://github.com/ben-hawks/wa_hls4ml_models/releases/download/resource-report-retrain/gnn_resource_report_final_model.pth",
+      "sha256": "ac8bbfbf766898412271298b3f39318f3a3e522d62febaeb68bdb85d8fea2b0c",
       "bytes": 217909055,
-      "model": "FPGA_GNN_GATv2 (5 x GATv2, 5 heads, hidden 512), trained on hls_resource_report labels",
-      "source": "wa-hls4ml-paper working copy (gnn_final_model.pth, 2026-09-25); the checkpoint's own test_metrics match paper Table 4's GNN 'All' row"
+      "model": "FPGA_GNN_GATv2 (5 x GATv2, 5 heads, hidden 512), retrained on post-synthesis resource_report labels; early-stopped at epoch 105 of 200, best epoch 65"
     },
-    "transformer_best_model.pt": {
-      "sha256": "83046ae976ac2dacef6026cbd0c5f04eb5c148fd55fec7cc443419f15e6359e3",
+    "transformer_resource_report_final_model.pt": {
+      "url": "https://github.com/ben-hawks/wa_hls4ml_models/releases/download/resource-report-retrain/transformer_resource_report_final_model.pt",
+      "sha256": "5e8726c397d0e11077cd5face11b8ea2751860987b317c7dec379cd5f07494d2",
       "bytes": 12821496,
-      "model": "TransformerRegressor (2 blocks, 8 heads, d=512), trained on hls_resource_report labels",
-      "source": "github.com/jdweitz/wa_hls4ml_models@4aff94b transformer/transformer_best_model.pt"
+      "model": "TransformerRegressor (2 blocks, 8 heads, d=512), retrained on post-synthesis resource_report labels; best epoch 197 of 200. Identical to resource_report_results/transformer/model.pt at the source commit"
     }
   }
 }

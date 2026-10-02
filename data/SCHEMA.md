@@ -65,10 +65,11 @@ values a submission predicts per sample:
 | `interval_max` | `latency_report` | clock cycles (initiation interval) |
 
 `hls_resource_report` is **not** the ground truth. It is the C-synthesis estimate, and it
-exists for more samples (94,430 vs 92,933 in the test set). The pretrained GNN and
-Transformer reference checkpoints were trained on it, so the benchmark can emit it
-(`python -m wa_hls4ml_bench.truth --gt hls_estimate`) for checking that those checkpoints
-load correctly (docs/VALIDATION.md §2). Benchmark scores always use `resource_report`.
+exists for more samples (94,430 vs 92,933 in the test set). The paper's original GNN and
+Transformer checkpoints were trained on it; the reference checkpoints used here are the
+versions retrained on `resource_report` (docs/VALIDATION.md §5). The benchmark can still
+emit it (`python -m wa_hls4ml_bench.truth --gt hls_estimate`) for checking models
+trained on it, but benchmark scores always use `resource_report`.
 
 Samples with no `resource_report` (9,551 test, 1 exemplar) have no ground truth. They
 are excluded from scoring, never imputed. A submission should still predict them: the

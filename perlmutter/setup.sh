@@ -19,13 +19,13 @@ step_envs() {
     "$WA_VENV/bin/python" -c "import torch, torch_geometric; print('torch', torch.__version__, 'pyg', torch_geometric.__version__, 'cuda', torch.version.cuda)"
     module unload "$WA_PYTORCH_MODULE"
 
-    echo "== MLP venv ($WA_VENV_MLP): rule4ml 0.2.0 + TensorFlow"
+    echo "== rule4ml venv ($WA_VENV_MLP): rule4ml 0.2.0 (MLP: TensorFlow, GNN: torch)"
     module load python
     python -m venv "$WA_VENV_MLP"
     "$WA_VENV_MLP/bin/pip" install --upgrade pip
     "$WA_VENV_MLP/bin/pip" install -r "$WA_REPO/requirements-mlp.txt"
     # rule4ml imports torch_geometric -> torch._dynamo -> triton. On CPU-only nodes the
-    # triton import can segfault; the MLP never uses it (see docs/VALIDATION.md).
+    # triton import can segfault; neither rule4ml model uses it (see docs/VALIDATION.md).
     "$WA_VENV_MLP/bin/pip" uninstall -y triton || true
     "$WA_VENV_MLP/bin/python" -c "import rule4ml; print('rule4ml', rule4ml.__version__)"
 }

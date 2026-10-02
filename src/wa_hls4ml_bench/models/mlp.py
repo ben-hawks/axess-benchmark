@@ -1,5 +1,9 @@
 """Baseline MLP reference model (rule4ml v0.2.0, bundled pretrained v2 weights).
 
+The same wrapper also runs rule4ml's bundled v2 GNN (``kind="gnn"``). That is a GIN-based
+model (GINConv + GraphNorm + JumpingKnowledge), NOT the paper's GATv2 reference GNN. It
+is kept only as an auxiliary comparison and is reported as ``rule4ml_gnn``.
+
 rule4ml ships 6 independent single-target Keras MLPs. Its public
 ``MultiModelWrapper.predict()`` wants a live Keras model and takes a Cartesian product
 over configs, so this calls the lower-level functions it uses internally, feeding each
@@ -20,24 +24,28 @@ TARGET_MAP = {"BRAM": "BRAM", "DSP": "DSP", "FF": "FF", "LUT": "LUT",
 VALID_HLS4ML = {"0.8.1", "1.1.0"}
 VALID_VIVADO = {"2019.1", "2019.2", "2020.1", "2020.2", "2021.1", "2021.2",
                 "2022.1", "2022.2", "2023.1", "2023.2", "2024.1", "2024.2"}
-# Only used if a sample's version is outside what rule4ml's categorical maps know about.
-# The MLP's inputs do not include vivado_version, so this has no effect on its outputs.
+# Only used if a sample's version is outside what rule4ml's categorical maps know about
+# (never, on the published splits). The MLP ignores vivado_version; rule4ml's GNN uses it.
 FALLBACK_VIVADO = "2024.2"
 
 
 class Rule4mlMLP:
-    def __init__(self):
+    def __init__(self, kind: str = "mlp"):
         import rule4ml
-        from rule4ml.models.wrappers import KerasModelWrapper
+        from rule4ml.models.wrappers import KerasModelWrapper, TorchModelWrapper
 
         root = os.path.dirname(rule4ml.__file__)
         boards = json.load(open(os.path.join(root, "parsers", "supported_boards.json")))
         self.part_to_board = {v["part"]: k for k, v in boards.items()}
-        base = os.path.join(root, "models", "weights", "v2", "mlp")
+        base = os.path.join(root, "models", "weights", "v2", kind)
         self.wrappers = {}
         for t in TARGET_MAP:
-            w = KerasModelWrapper()
-            w.load(f"{base}/{t}.config.json", f"{base}/{t}.weights.h5")
+            if kind == "mlp":
+                w = KerasModelWrapper()
+                w.load(f"{base}/{t}.config.json", f"{base}/{t}.weights.h5")
+            else:
+                w = TorchModelWrapper()
+                w.load(f"{base}/{t}.config.json", f"{base}/{t}.weights.pt")
             self.wrappers[t] = w
 
     def inputs(self, sample):

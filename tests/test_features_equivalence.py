@@ -1,6 +1,7 @@
 """The vendored feature extractor must match the original bit for bit.
 
-Needs a checkout of github.com/jdweitz/wa_hls4ml_models; point WA_MODELS_REPO at it.
+Needs a checkout of github.com/ben-hawks/wa_hls4ml_models (tag resource-report-retrain,
+or the wa-hls4ml-paper submodule); point WA_MODELS_REPO at it.
 Skipped otherwise (the golden-prediction test in test_pipeline.py covers the same path
 end to end without it).
 """

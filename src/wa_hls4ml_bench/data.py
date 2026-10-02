@@ -32,8 +32,9 @@ SUBSET_GROUP = {
 }
 
 # Ground-truth definitions. POST_SYNTHESIS is the official benchmark target.
-# HLS_ESTIMATE is what the GNN/Transformer reference checkpoints were trained on; it is
-# used only to verify that those checkpoints are loaded correctly (see docs/VALIDATION.md).
+# HLS_ESTIMATE is what the paper's original GNN/Transformer checkpoints were trained on
+# (the reference checkpoints are retrained on POST_SYNTHESIS); it is kept only for
+# checking models trained on it (see docs/VALIDATION.md section 5).
 POST_SYNTHESIS = "post_synthesis"
 HLS_ESTIMATE = "hls_estimate"
 
@@ -138,7 +139,8 @@ def has_hls_estimate(sample: dict) -> bool:
 
 
 def truth_hls_estimate(sample: dict) -> dict | None:
-    """C-synthesis ``hls_resource_report`` labels, exactly as the GNN/Transformer were trained.
+    """C-synthesis ``hls_resource_report`` labels, exactly as the paper's original
+    (pre-retrain) GNN/Transformer checkpoints were trained.
 
     Mirrors ``ModelProcessor.get_resource_report`` (int(float(x)), 0 on parse failure).
     """
@@ -158,6 +160,46 @@ def truth_hls_estimate(sample: dict) -> dict | None:
         "DSP": float(to_int(hls.get("dsp", 0))),
         "FF": float(to_int(hls.get("ff", 0))),
         "LUT": float(to_int(hls.get("lut", 0))),
+        "cycles_max": float(to_int(lat.get("cycles_max", 0))),
+        "interval_max": float(to_int(lat.get("interval_max", 0))),
+    }
+
+
+def truth_training_labels(sample: dict) -> dict | None:
+    """Labels exactly as the retrained GNN/Transformer saw them in training.
+
+    Mirrors ``ModelProcessor(resource_key="resource_report")`` in
+    wa_hls4ml_models@resource-report-retrain (dataset/Dataset_to_csvs6_with_ii.py):
+    keep a sample iff ``resource_report`` has a non-empty ff/lut/bram/dsp entry, take
+    int(float(x)) for every count except BRAM (float, so BRAM18 half blocks survive),
+    and use 0 for anything missing or unparseable -- including the latency of a sample
+    whose ``latency_report`` is empty. That last rule is why this keeps 433,676 train
+    samples where ``truth_post_synthesis`` (which requires a latency report) keeps
+    433,674. Used only to rebuild the normalization stats and the prediction cap;
+    benchmark scoring uses ``truth_post_synthesis``.
+    """
+    res = sample.get("resource_report") or {}
+    if not any(res.get(k) for k in ("ff", "lut", "bram", "dsp")):
+        return None
+    lat = sample.get("latency_report") or {}
+
+    def to_int(v):
+        try:
+            return int(float(v))
+        except Exception:
+            return 0
+
+    def to_float(v):
+        try:
+            return float(v)
+        except Exception:
+            return 0.0
+
+    return {
+        "BRAM": to_float(res.get("bram", 0)),
+        "DSP": float(to_int(res.get("dsp", 0))),
+        "FF": float(to_int(res.get("ff", 0))),
+        "LUT": float(to_int(res.get("lut", 0))),
         "cycles_max": float(to_int(lat.get("cycles_max", 0))),
         "interval_max": float(to_int(lat.get("interval_max", 0))),
     }

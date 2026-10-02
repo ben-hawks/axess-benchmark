@@ -5,20 +5,21 @@
 # pretrained-only reference inference + scoring, packaged for NERSC Perlmutter.
 
 benchmark_name: "wa-hls4ml"
-scored_date: "2026-09-29"
+scored_date: "2026-10-02"
 notes: >
-  Re-scored after the repository split. Material change since 2026-08-14: all
-  three reference solutions (MLP, GATv2 GNN, Transformer) now run from their
-  published pretrained weights inside this repo and are scored end to end on the
-  full test (102,484) and exemplar (887) splits (reference_results/). Checkpoint
-  loading is independently verified: the GNN reproduces every per-group cell of
-  paper Table 4 on the labels it was trained on (docs/VALIDATION.md). Caveats
-  that do not flip items but are recorded: (1) runs so far were on a Windows
-  CPU workstation, not yet on Perlmutter; (2) the Transformer checkpoint
-  reproduces Table 4 closely but not exactly; (3) GNN/Transformer were trained on
-  HLS-estimate labels and score poorly on the post-synthesis resource targets --
-  a property of the reference models, documented in README section 4, not a
-  benchmark-definition gap.
+  Re-scored 2026-10-02 after switching the GNN/Transformer reference solutions to the
+  versions retrained on post-synthesis resource_report labels (ben-hawks/wa_hls4ml_models
+  release resource-report-retrain). All three reference solutions, plus rule4ml's GNN as
+  an auxiliary comparison, run from published pretrained weights inside this repo and are
+  scored end to end on the full test (102,484) and exemplar (887) splits
+  (reference_results/). The inference path is independently verified: per-sample
+  agreement with the release's own test predictions (max rel. diff 2.8e-4), identical
+  prediction-cap counts, identical reported R^2 (docs/VALIDATION.md). Caveats that do not
+  flip items but are recorded: (1) runs so far were on a Windows CPU workstation, not
+  yet on Perlmutter; (2) the paper's own Table 4 GNN/Transformer numbers come from
+  HLS-estimate checkpoints and are not reproduced by the reference solutions here
+  (documented, docs/VALIDATION.md section 5); (3) the GNN handles the 119 Bipc exemplar
+  samples, which need a feature fallback, badly.
 
 # --- Category 1: Software Environment (1 point per true item, max 5) ---
 software_environment:
@@ -119,7 +120,7 @@ reference_solution:
   - id: publicly_available
     description: "A reference solution is publicly available."
     met: true
-    evidence: "3 reference solutions with public weights: rule4ml 0.2.0 (PyPI), GNN + Transformer checkpoints (weights/MANIFEST.json; HF model repo pending publication)."
+    evidence: "3 reference solutions with public weights: rule4ml 0.2.0 (PyPI); GNN + Transformer checkpoints as assets of a public GitHub release, URLs and sha256 in weights/MANIFEST.json."
   - id: well_documented
     description: "The provided reference solution is well documented."
     met: true
@@ -131,7 +132,7 @@ reference_solution:
   - id: metrics_evaluated
     description: "All metrics defined as part of the benchmark are evaluated as part of the reference solution."
     met: true
-    evidence: "All 3 metrics (plus RPE plots) evaluated for all 3 models, all 6 targets, test (all/dense/conv1d/conv2d) and exemplar (per architecture): reference_results/. Checkpoint correctness verified against paper Table 4 (docs/VALIDATION.md)."
+    evidence: "All 3 metrics (plus RPE plots) evaluated for all 3 models (and the auxiliary rule4ml GNN), all 6 targets, test (all/dense/conv1d/conv2d) and exemplar (per architecture): reference_results/. Inference verified per sample against the checkpoint release (docs/VALIDATION.md)."
   - id: baseline_open
     description: "The baseline solution/model is openly available for study (architecture, hyperparameters, and training code if a neural network)."
     met: true

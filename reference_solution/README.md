@@ -1,57 +1,70 @@
 # Reference solutions
 
 Three pretrained surrogate models, positioned as a ladder of increasingly structured
-priors (paper §4). The benchmark only runs inference with the published weights.
-Training code and history live upstream and are linked for provenance.
+priors (paper §4), plus one auxiliary comparison model. The benchmark only runs
+inference with published weights. Training code and history live upstream and are
+linked for provenance.
 
-All three are run by `python -m wa_hls4ml_bench.predict --model {mlp,gnn,transformer}`
+Everything is run by `python -m wa_hls4ml_bench.predict --model {mlp,gnn,transformer,rule4ml_gnn}`
 and scored with the same `score.py` on the same test and exemplar samples. Results:
 [../reference_results/LEADERBOARD.md](../reference_results/LEADERBOARD.md), with
 per-group tables in `../reference_results/<split>/<model>/METRICS.md`.
 
 ## Summary
 
-| | Baseline MLP | GNN | Transformer |
-|---|---|---|---|
-| Code in this repo | `src/wa_hls4ml_bench/models/mlp.py` (wraps rule4ml) | `models/gnn.py` (vendored) | `models/transformer.py` (vendored) |
-| Upstream | [IMPETUS-UdeS/rule4ml](https://github.com/IMPETUS-UdeS/rule4ml) (`trets` branch), paper §4.1 | [jdweitz/wa_hls4ml_models](https://github.com/jdweitz/wa_hls4ml_models) `GNN/`, paper §4.2 | same repo, `transformer/`, paper §4.3 |
-| Weights | bundled in `rule4ml==0.2.0` (`models/weights/v2/mlp/*`) | `gnn_final_model.pth`, sha256 `7a8e9c42…` | `transformer_best_model.pt` (wa_hls4ml_models@4aff94b), sha256 `83046ae9…` |
-| Input representation | global + per-layer statistics from `model_config`/`hls_config` (rule4ml parser) | graph: one node per layer, 33-dim node features, sequential edges, 4-dim global one-hot | sequence of 33-dim layer tokens + `[CLS]`, max 51 layers |
-| Architecture | 6 independent per-target MLPs with categorical embeddings | 5× GATv2Conv (5 heads × 512, concat), LayerNorm, ELU, residual; learned add/mean/max pooling; MLP 516→512→256→6 | Linear 33→512 + learned positions; 2× TransformerEncoderLayer (8 heads, FF 512); linear head on `[CLS]` |
-| Training labels | post-synthesis `resource_report` | **HLS estimate `hls_resource_report`**, log-transformed, z-scored | **HLS estimate `hls_resource_report`**, log-transformed, z-scored |
-| Training (upstream) | 200 epochs, Adam, MSLE | AdamW lr 3e-3, wd 5e-6, batch 1024, MSE, ReduceLROnPlateau; best checkpoint at epoch ≤180 of the run; NVIDIA A10 | Adam, MSE, batch 1024; NVIDIA A100 |
-| Parameters | small (per-target MLPs) | 54.5 M | 3.2 M |
-| Inference hardware used here | CPU (TensorFlow) | CPU or 1 GPU | CPU or 1 GPU |
-| Measured cost (Windows workstation CPU, incl. featurization) | ~58 ms/sample exemplar* | 2.1 ms/sample (test) | 0.34 ms/sample (test) |
+| | Baseline MLP | GNN | Transformer | rule4ml GNN (auxiliary) |
+|---|---|---|---|---|
+| Code in this repo | `src/wa_hls4ml_bench/models/mlp.py` (wraps rule4ml) | `models/gnn.py` (vendored) | `models/transformer.py` (vendored) | `models/mlp.py`, `kind="gnn"` (wraps rule4ml) |
+| Upstream | [IMPETUS-UdeS/rule4ml](https://github.com/IMPETUS-UdeS/rule4ml) (`trets` branch), paper §4.1 | [ben-hawks/wa_hls4ml_models](https://github.com/ben-hawks/wa_hls4ml_models) @ `resource-report-retrain`, `GNN/`, paper §4.2 | same, `transformer/`, paper §4.3 | rule4ml |
+| Weights | bundled in `rule4ml==0.2.0` (`models/weights/v2/mlp/*`) | release asset `gnn_resource_report_final_model.pth`, sha256 `ac8bbfbf…` | release asset `transformer_resource_report_final_model.pt`, sha256 `5e8726c3…` | bundled in `rule4ml==0.2.0` (`models/weights/v2/gnn/*`) |
+| Input representation | global + per-layer statistics from `model_config`/`hls_config` (rule4ml parser) | graph: one node per layer, 33-dim node features, sequential edges, 4-dim global one-hot | sequence of 33-dim layer tokens + `[CLS]`, max 51 layers | rule4ml graph features (includes Vivado version) |
+| Architecture | 6 independent per-target MLPs with categorical embeddings | 5× GATv2Conv (5 heads × 512, concat), LayerNorm, ELU, residual; learned add/mean/max pooling; MLP 516→512→256→6 | Linear 33→512 + learned positions; 2× TransformerEncoderLayer (8 heads, FF 512); linear head on `[CLS]` | 6 per-target GIN models (GINConv, GraphNorm, JumpingKnowledge, attentional pooling) |
+| Training labels | post-synthesis `resource_report` | post-synthesis `resource_report` (FF/LUT/DSP int, BRAM float) + `latency_report`; log-transformed (ε = 1e-6), z-scored | same as GNN | post-synthesis (rule4ml's own dataset) |
+| Training (upstream) | 200 epochs, Adam, MSLE | AdamW lr 3e-3, wd 5e-6, batch 1024, MSE, ReduceLROnPlateau, early stopping: stopped at epoch 105 of 200, best 65 (upstream README) | Adam lr 1e-5, batch 512, MSE, 200 epochs, best 197 | see rule4ml |
+| Output post-processing | none | `exp(y·σ + μ) − shift`, clamp at 0, **cap at the largest training label** | same as GNN | none |
+| Parameters | small (per-target MLPs) | 54.5 M | 3.2 M | small (per-target GNNs) |
+| Inference hardware | CPU (TensorFlow) | CPU or 1 GPU | CPU or 1 GPU | CPU (torch) |
+| Measured cost (Windows workstation CPU, incl. featurization) | ~58 ms/sample (exemplar)* | 1.1 ms/sample (test) | 0.16 ms/sample (test) | ~22 ms/sample (exemplar)* |
 
-\*The MLP cost is dominated by per-sample rule4ml feature parsing and TensorFlow
-startup, and amortizes over larger splits. GPU timings on Perlmutter will be recorded on
-the first run.
+\*rule4ml cost is dominated by per-sample feature parsing and framework startup, and
+amortizes over larger splits. GPU timings on Perlmutter will be recorded on the first
+run.
 
-## Preprocessing the checkpoints depend on
+**Why rule4ml's GNN is auxiliary.** It is a different architecture from the paper's GNN
+(GIN rather than GATv2) and isn't part of the paper's reference ladder. It's included
+because it's a second, independently trained post-synthesis graph model that ships with
+pretrained weights, which makes it a useful sanity comparison. On the test set it has
+the best BRAM R² of any model here (0.70), but it is far weaker than the retrained
+GATv2 GNN on DSP/FF/LUT.
+
+## Preprocessing the GNN/Transformer depend on
 
 `src/wa_hls4ml_bench/features.py` has two stages:
 
 1. **Raw per-layer features** (18 per layer: input/output dims ×3 each, precision, reuse
    factor, strategy, layer type, activation, filters, kernel size, stride, padding,
    pooling, batch-norm, I/O type). This is vendored verbatim from
-   `wa_hls4ml_models/dataset/Dataset_to_csvs6_with_ii.py`, including its quirks.
-   A test proves it is bit-identical to the original.
+   `wa_hls4ml_models/dataset/Dataset_to_csvs6_with_ii.py`, including its quirks. A test
+   proves it is bit-identical to the original at the `resource-report-retrain` commit.
 2. **Encoding**: 12 numerical features z-scored (−1 treated as 0), plus one-hot layer
    type (12), activation (6), and padding (3), giving 33 dims. For the GNN it adds
    one-hot strategy (2) and I/O type (2) as graph-level features.
 
-Outputs are de-normalized as `exp(y·σ + μ) − shift`, clamped at 0. The label/feature
-statistics (`weights/normalization_stats.json`) were not published with the checkpoints.
-They were regenerated from the training split; see ../docs/VALIDATION.md for how that
-was verified (the GNN reproduces paper Table 4 exactly on HLS-estimate labels).
+Both retrained models were trained on the same arrays with the same transform, so they
+share one set of statistics and caps (`weights/normalization_stats.json`). These agree
+with the stats file shipped in the GNN release to float32 precision (../docs/VALIDATION.md §2).
 
-## Why the GNN/Transformer score poorly on resources
+**The cap.** Upstream `transformer/run.py` and `GNN/load_pretrained.py` clip predictions
+at the per-target training maximum. For a few inputs, the log-space output otherwise
+extrapolates to physically impossible values (up to ~2 M DSPs). On the test set the cap
+changes 124 Transformer and 9 GNN predictions out of 557,598. It is part of each model's
+published inference procedure, so the benchmark applies it.
 
-Both were trained to reproduce HLS C-synthesis *estimates*, and the benchmark's ground
-truth is post-logic-synthesis. The two differ systematically: HLS over-reports BRAM
-(e.g. 32 vs 2), and LUT/FF shift after logic optimization. Latency comes from the same
-report in both cases, which is why both models are the best latency predictors
-(R² 0.89–0.93) while being worse than the mean on resources. This isn't a pipeline error.
-Scored against the labels they were trained on, the same predictions give LUT R² 0.73
-(GNN) and 0.61 (Transformer) (`../reference_results/checkpoint_check/`).
+## The original (HLS-estimate) checkpoints
+
+The checkpoints behind the paper's Table 4 (`gnn_final_model.pth`, and
+`transformer_best_model.pt` at wa_hls4ml_models@4aff94b) were trained on
+`hls_resource_report`, so they predict HLS C-synthesis estimates, not the post-synthesis
+counts the benchmark scores. Scored against post-synthesis truth, they're worse than
+predicting the mean on all four resource targets. They are therefore no longer reference
+solutions. ../docs/VALIDATION.md §5 records how they were verified and what they score.

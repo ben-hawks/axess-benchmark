@@ -73,8 +73,8 @@ Every sample has a unique `sample_id` (`meta_data.uuid`, or `meta_data.model_id`
 
 **Ground truth** is the post-logic-synthesis `resource_report` plus `latency_report`.
 Samples without a post-synthesis report are excluded from scoring, never imputed. The
-C-synthesis estimate `hls_resource_report` is *not* ground truth (see §4 for why that
-matters for two of the reference models).
+C-synthesis estimate `hls_resource_report` is *not* ground truth. Post-synthesis BRAM
+counts can be fractional (a BRAM18 counts as 0.5).
 
 **FAIR.** *Findable*: unique per-sample ids, dataset card. *Accessible*: public HF hub
 plus a mirror, named license, standard `huggingface_hub` access (`scripts/fetch_data.py`,
@@ -103,34 +103,60 @@ benchmark: the constraints in §1 are inputs, not objectives.
 
 | | Baseline MLP | GNN | Transformer |
 |---|---|---|---|
-| Weights | rule4ml 0.2.0 bundled v2 weights (pip) | `gnn_final_model.pth` (218 MB) | `transformer_best_model.pt` (13 MB) |
+| Weights | rule4ml 0.2.0 bundled v2 weights (pip) | `gnn_resource_report_final_model.pth` (218 MB) | `transformer_resource_report_final_model.pt` (13 MB) |
+| Source | [rule4ml](https://github.com/IMPETUS-UdeS/rule4ml) | [wa_hls4ml_models release `resource-report-retrain`](https://github.com/ben-hawks/wa_hls4ml_models/releases/tag/resource-report-retrain) | same release |
 | Architecture | 6 per-target MLPs over global/statistical features | 5× GATv2 (5 heads, hidden 512), residual, mixed pooling, MLP head | 2-block encoder (8 heads, d=512), `[CLS]` head |
-| Trained on | post-synthesis labels | **HLS-estimate labels** | **HLS-estimate labels** |
+| Trained on | post-synthesis labels | post-synthesis labels (retrained) | post-synthesis labels (retrained) |
 | Inference | CPU, TensorFlow | GPU or CPU, PyTorch Geometric | GPU or CPU, PyTorch |
 
+The GNN and Transformer are the paper's architectures **retrained on post-synthesis
+`resource_report` labels**. The checkpoints behind the paper's Table 4 were trained on
+the HLS C-synthesis estimates (`hls_resource_report`), so they predict a different
+quantity than this benchmark scores (docs/VALIDATION.md §5). Both retrained models cap
+their predictions at the largest training label, as their training and evaluation code
+does.
+
+rule4ml's own bundled GNN (`rule4ml_gnn`, GIN-based) is also run and scored for
+comparison. It is **not** one of the reference solutions: it's a different architecture
+from the paper's GATv2 GNN, trained by rule4ml on post-synthesis labels.
+
 Details, provenance, and inference cost: [reference_solution/README.md](reference_solution/README.md).
-How the checkpoints were verified (the GNN reproduces paper Table 4 exactly on
-HLS-estimate labels): [docs/VALIDATION.md](docs/VALIDATION.md).
+How the inference path was verified (per-sample agreement with the release's own
+predictions): [docs/VALIDATION.md](docs/VALIDATION.md).
 
-**Reference results** (full test set and exemplar set, post-synthesis ground truth,
-[reference_results/](reference_results/LEADERBOARD.md)):
+**Reference results** (post-synthesis ground truth,
+[reference_results/](reference_results/LEADERBOARD.md); per-group tables in each `METRICS.md`):
 
-| Test (n = 92,933) | BRAM | DSP | FF | LUT | Cycles | II |
+| Test, R^2 (n = 92,933) | BRAM | DSP | FF | LUT | Cycles | II | mean |
+|---|---|---|---|---|---|---|---|
+| Baseline MLP | 0.32 | 0.03 | 0.20 | 0.49 | 0.54 | 0.34 | 0.32 |
+| GNN | **0.64** | 0.56 | **0.93** | 0.90 | 0.81 | 0.83 | 0.78 |
+| Transformer | 0.35 | **0.83** | 0.93 | **0.90** | **0.93** | **0.92** | **0.81** |
+| *rule4ml GNN (auxiliary)* | *0.70* | *0.18* | *0.51* | *0.55* | *0.79* | *0.56* | *0.55* |
+
+| Test, SMAPE % | BRAM | DSP | FF | LUT | Cycles | II |
 |---|---|---|---|---|---|---|
-| MLP R^2 | 0.32 | 0.03 | 0.20 | 0.49 | 0.54 | 0.34 |
-| GNN R^2 | -51.2 | -95.9 | -1.44 | -5.28 | 0.89 | 0.92 |
-| Transformer R^2 | -7.08 | -2.19 | -2.88 | -10.6 | 0.93 | 0.91 |
-| MLP SMAPE % | 33.9 | 105.7 | 24.9 | 15.5 | 31.8 | 27.0 |
-| GNN SMAPE % | 108.0 | 24.8 | 19.4 | 27.2 | 15.8 | 13.2 |
-| Transformer SMAPE % | 116.7 | 13.3 | 10.6 | 19.5 | 10.3 | 14.2 |
+| Baseline MLP | 33.9 | 105.7 | 24.9 | 15.5 | 31.8 | 27.0 |
+| GNN | 21.6 | 14.8 | 14.1 | 14.0 | 17.9 | **14.5** |
+| Transformer | **18.9** | **8.8** | **3.6** | **4.5** | **11.3** | 14.7 |
+| *rule4ml GNN (auxiliary)* | *46.3* | *103.3* | *16.0* | *16.5* | *12.9* | *14.2* |
 
-**How to read this.** The GNN and Transformer checkpoints predict what HLS C-synthesis
-*estimates*, which systematically differs from what logic synthesis reports (e.g. HLS
-reports 32 BRAM where synthesis uses 2). They are the strongest latency predictors, but
-on the four resource targets they are worse than predicting the mean. The baseline MLP,
-trained on post-synthesis labels, is the only reference model that is positive on all
-six. Closing that gap, meaning a model that predicts post-synthesis resources as well as
-the GNN/Transformer predict latency, is the open problem this benchmark measures.
+| Exemplar, R^2 (n = 886) | BRAM | DSP | FF | LUT | Cycles | II |
+|---|---|---|---|---|---|---|
+| Baseline MLP | -0.41 | 0.11 | 0.49 | 0.32 | **0.51** | **0.46** |
+| GNN | **-0.21** | 0.04 | **0.52** | **0.56** | -6.86 | -5.79 |
+| Transformer | -0.68 | **0.58** | -2.98 | -0.57 | 0.41 | 0.15 |
+| *rule4ml GNN (auxiliary)* | *-11.8* | *0.42* | *-1.31* | *0.43* | *0.44* | *0.39* |
+
+**How to read this.** On the test set, the retrained Transformer is the best overall
+model and the retrained GNN is close behind. Both are far ahead of the baseline MLP on
+every target. Neither one comes close on BRAM (R^2 0.35–0.64). Most of the BRAM error
+comes from the 1.5% of test samples in the `2_20` subset, which were synthesized for
+several different FPGAs, while the target part is not a model input. On the exemplar
+set, every model degrades sharply: none of them generalizes reliably to real scientific
+architectures. The GNN's exemplar latency collapse comes almost entirely from the 119
+Bipc samples (docs/VALIDATION.md §4). Out-of-distribution generalization is the open
+problem this benchmark measures.
 
 ## 5. Documentation and reproducible protocol
 
@@ -143,16 +169,16 @@ the GNN/Transformer predict latency, is the open problem this benchmark measures
    `LEADERBOARD.md`, per-model `METRICS.md`, `metrics.json`, and RPE plots.
 4. Compare against [reference_results/](reference_results/LEADERBOARD.md).
 
-The normalization statistics the checkpoints need are shipped in
-[weights/normalization_stats.json](weights/normalization_stats.json). They were
-regenerated from the train split by `python -m wa_hls4ml_bench.stats` and verified in
-docs/VALIDATION.md.
+The normalization statistics and prediction caps the checkpoints need are shipped in
+[weights/normalization_stats.json](weights/normalization_stats.json). They were rebuilt
+from the train split by `python -m wa_hls4ml_bench.stats` and agree with the stats file
+shipped in the GNN release to float32 precision (docs/VALIDATION.md §2).
 
 **Motivation and background.** hls4ml compiles ML models into FPGA IP for latency- and
 power-constrained scientific edge systems (e.g. LHC triggers). Codesign loops need
 resource/latency numbers for many candidate designs, but each synthesis run takes
 minutes to hours and sometimes fails. A surrogate that answers in milliseconds (about
-2 ms/sample for the GNN on a CPU, including featurization) makes much wider design-space
+1 ms/sample for the GNN on a CPU, including featurization) makes much wider design-space
 exploration possible. wa-hls4ml gives the community a common, large, diverse dataset and
 evaluation protocol in place of per-paper private datasets (paper §1, Table 1).
 
@@ -160,10 +186,13 @@ evaluation protocol in place of per-paper private datasets (paper §1, Table 1).
 - Only 90.7% of test samples have post-synthesis ground truth. The rest are excluded.
 - The exemplar distribution barely overlaps the synthetic train/test distribution
   (paper Fig. 4), so all reference models degrade sharply there.
-- The GNN/Transformer references target HLS estimates (§4). The published Transformer
-  checkpoint reproduces paper Table 4 closely but not exactly (docs/VALIDATION.md §2).
-- 119 Bipc exemplar samples need a documented feature-extraction fallback
-  (docs/VALIDATION.md §4).
+- The reference GNN/Transformer are retrained versions of the paper's models. The paper's
+  Table 4 numbers come from checkpoints trained on HLS estimates, so they aren't
+  reproduced here and aren't comparable with this benchmark's scores (docs/VALIDATION.md §5).
+- The target FPGA part is not a model input, which hurts BRAM on the multi-part `2_20`
+  subset.
+- 119 Bipc exemplar samples need a documented feature-extraction fallback, and the GNN
+  handles those samples badly (docs/VALIDATION.md §4).
 - Generated architectures have no skip connections and a limited reuse-factor range.
 
 ## Submitting
@@ -186,7 +215,7 @@ See [CITATION.cff](CITATION.cff).
 ## License
 
 Code: Apache-2.0 ([LICENSE](LICENSE)). It includes model and preprocessing code
-vendored from [wa_hls4ml_models](https://github.com/jdweitz/wa_hls4ml_models)
+vendored from [wa_hls4ml_models](https://github.com/ben-hawks/wa_hls4ml_models)
 (Apache-2.0). The dataset is CC-BY-NC 4.0, and so are the 40 dataset samples
 excerpted in `tests/fixtures/data/`. rule4ml (GPL-3.0) is a pip dependency of the
 MLP environment only and is not vendored.

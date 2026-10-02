@@ -26,8 +26,10 @@ import pandas as pd
 from . import data as D
 from .features import MODEL_OUTPUT_ORDER, encode_nodes
 
-GNN_CHECKPOINT = "gnn_final_model.pth"
-TRANSFORMER_CHECKPOINT = "transformer_best_model.pt"
+# Retrained on post-synthesis labels: github.com/ben-hawks/wa_hls4ml_models, release
+# resource-report-retrain (see weights/MANIFEST.json).
+GNN_CHECKPOINT = "gnn_resource_report_final_model.pth"
+TRANSFORMER_CHECKPOINT = "transformer_resource_report_final_model.pt"
 STATS_FILE = "normalization_stats.json"
 
 
@@ -45,15 +47,19 @@ def _load_stats(weights_dir, model):
     m = s["models"][model]
     return (np.asarray(s["feature_means"], np.float32), np.asarray(s["feature_stds"], np.float32),
             np.asarray(m["label_means"], np.float32), np.asarray(m["label_stds"], np.float32),
-            float(m["log_shift"]))
+            float(m["log_shift"]), np.asarray(m["label_max"], np.float32))
 
 
-def _denormalize(out, label_means, label_stds, log_shift):
-    """Dataset2.denormalize_labels: undo z-score, then log (exp - shift), clamp at 0."""
+def _denormalize(out, label_means, label_stds, log_shift, label_max):
+    """Dataset2.denormalize_labels (undo z-score, then log: exp - shift, clamp at 0), then
+    cap at the largest training label, as upstream transformer/run.py and
+    GNN/load_pretrained.py do: for a few inputs the log-space output extrapolates far past
+    anything physically possible (e.g. millions of DSPs)."""
     import torch
 
     y = out * torch.as_tensor(label_stds, device=out.device) + torch.as_tensor(label_means, device=out.device)
-    return torch.clamp(torch.exp(y) - log_shift, min=0.0)
+    y = torch.clamp(torch.exp(y) - log_shift, min=0.0)
+    return torch.minimum(y, torch.as_tensor(label_max, device=out.device))
 
 
 def _to_frame(ids, subsets, preds_model_order):
@@ -70,7 +76,7 @@ def predict_gnn(cache, weights_dir, device, batch_size=1024):
     from .models import gnn
 
     model, _ = gnn.load(os.path.join(weights_dir, GNN_CHECKPOINT), device)
-    fm, fs, lm, ls, shift = _load_stats(weights_dir, "gnn")
+    fm, fs, lm, ls, shift, cap = _load_stats(weights_dir, "gnn")
     idx = np.nonzero(cache.feat_ok)[0]
     preds = np.zeros((len(idx), 6), dtype=np.float32)
     with torch.no_grad():
@@ -92,7 +98,7 @@ def predict_gnn(cache, weights_dir, device, batch_size=1024):
                 batch=torch.as_tensor(np.concatenate(bs), dtype=torch.long, device=device),
                 strategy=glob[:, :2], io_type=glob[:, 2:],
             )
-            out = _denormalize(model(batch), lm, ls, shift)
+            out = _denormalize(model(batch), lm, ls, shift, cap)
             preds[a:a + len(out)] = out.cpu().numpy()
     return _to_frame(cache.sample_id[idx], cache.subset[idx], preds)
 
@@ -103,7 +109,7 @@ def predict_transformer(cache, weights_dir, device, batch_size=1024):
     from .models import transformer
 
     model = transformer.load(os.path.join(weights_dir, TRANSFORMER_CHECKPOINT), device)
-    fm, fs, lm, ls, shift = _load_stats(weights_dir, "transformer")
+    fm, fs, lm, ls, shift, cap = _load_stats(weights_dir, "transformer")
     ok = cache.feat_ok & (cache.n_layers() <= model.max_layers)
     idx = np.nonzero(ok)[0]
     preds = np.zeros((len(idx), 6), dtype=np.float32)
@@ -118,14 +124,14 @@ def predict_transformer(cache, weights_dir, device, batch_size=1024):
                 x[k, :len(nodes)] = nodes
                 mask[k, :len(nodes)] = False
             out = model(torch.as_tensor(x, device=device), torch.as_tensor(mask, device=device))
-            preds[a:a + len(out)] = _denormalize(out, lm, ls, shift).cpu().numpy()
+            preds[a:a + len(out)] = _denormalize(out, lm, ls, shift, cap).cpu().numpy()
     return _to_frame(cache.sample_id[idx], cache.subset[idx], preds)
 
 
-def predict_mlp(data_root, split):
+def predict_mlp(data_root, split, kind="mlp"):
     from .models.mlp import Rule4mlMLP
 
-    mlp = Rule4mlMLP()
+    mlp = Rule4mlMLP(kind)
     ids, subsets, gl, sl, skipped = [], [], [], [], 0
     for subset, sample in D.iter_samples(data_root, split):
         built = mlp.inputs(sample)
@@ -136,7 +142,7 @@ def predict_mlp(data_root, split):
         subsets.append(subset)
         gl.append(built[0])
         sl.append(built[1])
-    print(f"mlp: {len(ids)} samples built, {skipped} not representable by rule4ml", flush=True)
+    print(f"rule4ml {kind}: {len(ids)} samples built, {skipped} not representable by rule4ml", flush=True)
     preds = mlp.predict(gl, sl)
     df = pd.DataFrame({"sample_id": ids, "subset": subsets, **preds})
     return df[["sample_id", "subset"] + D.TARGETS]
@@ -144,7 +150,8 @@ def predict_mlp(data_root, split):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--model", required=True, choices=["gnn", "transformer", "mlp"])
+    p.add_argument("--model", required=True, choices=["gnn", "transformer", "mlp", "rule4ml_gnn"],
+                   help="rule4ml_gnn: rule4ml's bundled GIN model, auxiliary, not a reference solution")
     p.add_argument("--cache", help="featurized split .npz (gnn, transformer)")
     p.add_argument("--data-root", help="local dataset copy (mlp)")
     p.add_argument("--split", choices=D.SPLITS, help="split name (mlp)")
@@ -155,10 +162,10 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     t0 = time.time()
-    if args.model == "mlp":
+    if args.model in ("mlp", "rule4ml_gnn"):
         if not (args.data_root and args.split):
-            p.error("--model mlp needs --data-root and --split")
-        df = predict_mlp(args.data_root, args.split)
+            p.error(f"--model {args.model} needs --data-root and --split")
+        df = predict_mlp(args.data_root, args.split, "mlp" if args.model == "mlp" else "gnn")
         device = "cpu"
     else:
         if not args.cache:

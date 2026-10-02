@@ -4,8 +4,9 @@
     python scripts/fetch_weights.py --out $WA_WEIGHTS
     python scripts/fetch_weights.py --out $WA_WEIGHTS --from-local /path/to/checkpoints
 
-Files and sha256 sums come from weights/MANIFEST.json. normalization_stats.json is small
-and versioned in this repo, so it is copied from weights/ rather than downloaded.
+Files, download URLs (a GitHub release of wa_hls4ml_models) and sha256 sums come from
+weights/MANIFEST.json. normalization_stats.json is small and versioned in this repo,
+so it is copied from weights/ rather than downloaded.
 """
 
 import argparse
@@ -14,6 +15,7 @@ import json
 import os
 import shutil
 import sys
+import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEIGHTS_DIR = os.path.join(HERE, "..", "weights")
@@ -27,10 +29,17 @@ def sha256(path):
     return h.hexdigest()
 
 
+def download(url, dest):
+    tmp = dest + ".part"
+    with urllib.request.urlopen(url) as r, open(tmp, "wb") as f:
+        shutil.copyfileobj(r, f, length=1 << 20)
+    os.replace(tmp, dest)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--out", required=True)
-    p.add_argument("--from-local", help="copy checkpoints from this directory instead of HuggingFace")
+    p.add_argument("--from-local", help="copy checkpoints from this directory instead of downloading")
     args = p.parse_args()
 
     with open(os.path.join(WEIGHTS_DIR, "MANIFEST.json")) as f:
@@ -45,14 +54,12 @@ def main():
             if args.from_local:
                 shutil.copy(os.path.join(args.from_local, name), dest)
             else:
-                from huggingface_hub import hf_hub_download
-
-                hf_hub_download(repo_id=manifest["hf_repo"], filename=name,
-                                revision=manifest.get("hf_revision", "main"), local_dir=args.out)
+                print(f"downloading {info['url']}")
+                download(info["url"], dest)
         got = sha256(dest)
-        status = "ok" if got == info["sha256"] else f"CHECKSUM MISMATCH (got {got})"
-        ok &= got == info["sha256"]
-        print(f"{name}: {status}")
+        good = got == info["sha256"]
+        ok &= good
+        print(f"{name}: {'ok' if good else f'CHECKSUM MISMATCH (got {got})'}")
     sys.exit(0 if ok else 1)
 
 

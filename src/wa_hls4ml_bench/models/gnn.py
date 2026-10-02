@@ -1,6 +1,7 @@
 """GATv2 GNN reference model.
 
-Vendored from ``FPGA_GNN_GATv2`` in wa_hls4ml_models/GNN/Models.py (commit 4aff94b).
+Vendored from ``FPGA_GNN_GATv2`` in wa_hls4ml_models/GNN/Models.py (commit 4aff94b;
+unchanged through resource-report-retrain, ac394e9).
 Parameter names match the published checkpoint's ``model_state_dict``, so it loads with
 ``strict=True``. The forward pass is unchanged apart from dropping the attention-weight
 bookkeeping, which does not affect outputs.
