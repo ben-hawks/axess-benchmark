@@ -34,6 +34,16 @@ codabench/
 ground truth), `starting_kit/{test,exemplar}_sample_ids.csv`, `solution/`, and
 `starting_kit/sample_submission.zip` from a benchmark run's caches and predictions.
 
+## Submissions from the benchmark pipeline
+
+Every benchmark run packages each model's predictions as an upload-ready submission:
+`scripts/score_all.sh` (the Perlmutter `score` job) ends with
+`python -m wa_hls4ml_bench.submission`, which writes
+`$WA_RESULTS/codabench/<model>_submission.zip`. Checked on 2026-10-02: all four
+models' zips pass the validator against this bundle, and Codabench's scoring program
+reproduces their benchmark scores exactly. The Transformer's zip is identical to
+`starting_kit/sample_submission.zip`.
+
 ## Build
 
 After a benchmark run (docs/PERLMUTTER.md) has produced `$WA_CACHE/{train,test,exemplar}.npz`

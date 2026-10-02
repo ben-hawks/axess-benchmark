@@ -79,6 +79,7 @@ $WA_RESULTS/
   test/<model>/metrics.json
   test/<model>/rpe_boxplot.png
   exemplar/...                    # same, grouped by exemplar architecture
+  codabench/<model>_submission.zip  # upload-ready Codabench submission per model
 ```
 
 ## Scoring your own model
@@ -91,7 +92,12 @@ Write `$WA_RESULTS/test/predictions_<yourname>.csv` (columns `sample_id`, `BRAM`
 source perlmutter/env.sh && wa_activate_torch && bash scripts/score_all.sh
 ```
 
-Then fill in `SUBMISSION.md`.
+This scores your model next to the reference models and also writes
+`$WA_RESULTS/codabench/<yourname>_submission.zip`, ready to upload to the Codabench
+competition (codabench/README.md). It holds exactly the scored samples of both
+splits, with the same checks the Codabench scoring program applies. If your predictions
+are incomplete or non-finite, no zip is written and the step reports why. Then fill in
+`SUBMISSION.md`.
 
 ## Running interactively instead
 

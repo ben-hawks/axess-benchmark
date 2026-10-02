@@ -45,4 +45,7 @@ python make_submission.py --test predictions_test.csv --exemplar predictions_exe
 ```
 
 See that repository's `docs/PERLMUTTER.md` for building the caches and fetching the
-weights.
+weights. A full benchmark run there also writes an upload-ready
+`results/codabench/<model>_submission.zip` for every model it scores, including your
+own if you drop `predictions_<name>.csv` files into its results folder, so you don't
+need this step at all.
