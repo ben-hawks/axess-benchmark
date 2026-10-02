@@ -57,10 +57,14 @@ Last validated 2026-10-02:
 
 | Tier | Result |
 |---|---|
-| 1 structure | passes except the missing logo (below) |
+| 1 structure | passes |
 | 2 submission contract | passes: both files found at the zip root |
 | 3 local dry run | passes. Scores equal `reference_results/` exactly (Transformer test mean R² 0.809, exemplar −0.517; the GNN, packaged with `make_submission.py`, 0.780 / −1.956) |
-| 4 Docker run in `codalab-legacy:py312` | **not yet run**: the local Docker backend (Rancher Desktop) refused containers ("timed out dialing Hyper-V socket") |
+| 4 Docker run in `codalab-legacy:py312` | passes for the sample and baseline submissions. In-container scores equal the local ones, and all 28 leaderboard keys are present in `scores.json` |
+
+Tier 4 ran from WSL Ubuntu against its own Docker engine, because Rancher Desktop's
+Windows-side bridge was timing out ("timed out dialing Hyper-V socket"). The validator
+needs only some Docker engine that can run the declared image.
 
 The metrics separate the reference from the weak baseline: the training-mean
 submission scores test mean R² 0.000 and SMAPE 114% (the reference: 0.809 and 10.3%).
@@ -69,13 +73,13 @@ naming the problem. A wrapping folder and extra unscored rows are tolerated.
 
 ## Before uploading
 
-1. **Logo:** add `bundle_src/logo.png` and rebuild. `competition.yaml` requires `image`,
-   and Codabench will reject the bundle without it.
-2. **Terms:** `bundle_src/pages/terms_and_conditions.md` is a placeholder. Replace it
-   with real terms written or reviewed by the organizers.
-3. Run tier 4 once Docker works locally.
-4. Upload `build/competition_bundle.zip` on codabench.org (Benchmarks → Management →
-   Upload).
+1. **Terms:** `bundle_src/pages/terms_and_conditions.md` is a placeholder. That's
+   acceptable for the dev-instance example upload, but it must be replaced with real
+   terms written or reviewed by the organizers before a public competition.
+2. Upload `build/competition_bundle.zip` on the Codabench instance (Benchmarks →
+   Management → Upload).
+
+The logo (`bundle_src/logo.png`) is the hls4ml mark.
 
 Scoring is CPU-only and fast (well under a minute for both splits), so no custom
 image or GPU compute worker is needed.
