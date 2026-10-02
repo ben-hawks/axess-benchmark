@@ -159,7 +159,7 @@ documentation:
   - id: paper_exists
     description: "An academic paper about the benchmark exists."
     met: true
-    evidence: "arXiv:2511.05615, accepted to ACM TRETS special issue on Open Source Tools; builds on the companion rule4ml paper (arXiv:2408.05314)."
+    evidence: "Published: ACM TRETS 19(2), 2026, pp. 1-29, doi:10.1145/3787490 (preprint arXiv:2511.05615); builds on the companion rule4ml paper (arXiv:2408.05314)."
 
 # --- Motif tagging (not scored, but expected metadata) ---
 motifs:

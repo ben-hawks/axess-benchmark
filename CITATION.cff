@@ -1,6 +1,7 @@
 cff-version: 1.2.0
-message: "If you use this benchmark, please cite the paper below."
-title: "wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation"
+message: "If you use this benchmark, please cite the paper in preferred-citation."
+title: "AXESS wa-hls4ml benchmark"
+abstract: "Benchmark for hls4ml FPGA resource and latency surrogate models: dataset access, metrics, pretrained reference models and NERSC Perlmutter workflows."
 authors:
   - family-names: Hawks
     given-names: Benjamin
@@ -21,7 +22,7 @@ authors:
   - family-names: Sproule
     given-names: Donovan
   - family-names: Khoda
-    given-names: Elham E
+    given-names: Elham E.
   - family-names: Smith
     given-names: Keegan A.
   - family-names: Marroquin
@@ -34,13 +35,8 @@ authors:
     given-names: Javier
   - family-names: Loncar
     given-names: Vladimir
-date-released: 2025-11-06
-url: "https://arxiv.org/abs/2511.05615"
-identifiers:
-  - type: other
-    value: "arXiv:2511.05615"
-    description: "arXiv preprint"
-license: CC-BY-NC-4.0
+repository-code: "https://github.com/ben-hawks/axess-benchmark"
+license: Apache-2.0
 preferred-citation:
   type: article
   title: "wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation"
@@ -64,7 +60,7 @@ preferred-citation:
     - family-names: Sproule
       given-names: Donovan
     - family-names: Khoda
-      given-names: Elham E
+      given-names: Elham E.
     - family-names: Smith
       given-names: Keegan A.
     - family-names: Marroquin
@@ -77,6 +73,21 @@ preferred-citation:
       given-names: Javier
     - family-names: Loncar
       given-names: Vladimir
-  journal: "ACM Transactions on Reconfigurable Technology and Systems (TRETS), Special Issue on Open Source Tools"
-  year: 2025
-  note: "Accepted; in process of publication. arXiv:2511.05615."
+  journal: "ACM Transactions on Reconfigurable Technology and Systems"
+  volume: 19
+  issue: 2
+  start: 1
+  end: 29
+  year: 2026
+  month: 5
+  publisher:
+    name: "Association for Computing Machinery"
+  issn: "1936-7406"
+  doi: "10.1145/3787490"
+  url: "https://doi.org/10.1145/3787490"
+  identifiers:
+    - type: doi
+      value: "10.1145/3787490"
+    - type: other
+      value: "arXiv:2511.05615"
+      description: "arXiv preprint"

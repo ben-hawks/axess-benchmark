@@ -14,7 +14,8 @@
 
 This card follows the MLCommons Science Benchmarks Ontology (arXiv:2511.05614). The
 benchmark is described in *wa-hls4ml: A Benchmark and Surrogate Models for hls4ml
-Resource and Latency Estimation* (Hawks et al., arXiv:2511.05615, ACM TRETS).
+Resource and Latency Estimation* (Hawks et al., ACM TRETS 19(2), 2026,
+[doi:10.1145/3787490](https://doi.org/10.1145/3787490); preprint arXiv:2511.05615).
 
 ## Quick start (Perlmutter)
 
@@ -205,10 +206,13 @@ See [SUBMISSION.md](SUBMISSION.md) for the required report, and [docs/PERLMUTTER
 See [CITATION.cff](CITATION.cff).
 
 ```bibtex
-@misc{hawks2025wahls4ml,
+@article{hawks2026wahls4ml,
   title={wa-hls4ml: A Benchmark and Surrogate Models for hls4ml Resource and Latency Estimation},
-  author={Hawks, Benjamin and Weitz, Jason and Demler, Dmitri and Tame-Narvaez, Karla and Plotnikov, Dennis and Rahimifar, Mohammad Mehdi and Rahali, Hamza Ezzaoui and Therrien, Audrey C. and Sproule, Donovan and Khoda, Elham E and Smith, Keegan A. and Marroquin, Russell and Di Guglielmo, Giuseppe and Tran, Nhan and Duarte, Javier and Loncar, Vladimir},
-  year={2025}, eprint={2511.05615}, archivePrefix={arXiv}, primaryClass={cs.LG}
+  author={Hawks, Benjamin and Weitz, Jason and Demler, Dmitri and Tame-Narvaez, Karla and Plotnikov, Dennis and Rahimifar, Mohammad Mehdi and Rahali, Hamza Ezzaoui and Therrien, Audrey C. and Sproule, Donovan and Khoda, Elham E. and Smith, Keegan A. and Marroquin, Russell and Di Guglielmo, Giuseppe and Tran, Nhan and Duarte, Javier and Loncar, Vladimir},
+  journal={ACM Transactions on Reconfigurable Technology and Systems},
+  volume={19}, number={2}, pages={1--29}, year={2026}, month=may,
+  publisher={Association for Computing Machinery},
+  doi={10.1145/3787490}, url={https://doi.org/10.1145/3787490}
 }
 ```
 
