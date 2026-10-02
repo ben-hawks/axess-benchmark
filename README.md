@@ -19,7 +19,7 @@ Resource and Latency Estimation* (Hawks et al., arXiv:2511.05615, ACM TRETS).
 ## Quick start (Perlmutter)
 
 ```bash
-git clone <this repo> && cd wa-hls4ml-benchmark
+git clone https://github.com/ben-hawks/axess-benchmark.git && cd axess-benchmark
 bash perlmutter/setup.sh                          # login node: venvs, dataset, weights
 bash perlmutter/submit.sh -A <nersc_project>      # featurize -> infer (GPU + CPU) -> score
 cat $SCRATCH/wa-hls4ml/results/LEADERBOARD.md

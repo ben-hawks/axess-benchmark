@@ -17,5 +17,10 @@ mlp = ["rule4ml==0.2.0"]
 fetch = ["huggingface_hub>=0.24"]
 test = ["pytest"]
 
+[project.urls]
+Repository = "https://github.com/ben-hawks/axess-benchmark"
+Paper = "https://arxiv.org/abs/2511.05615"
+Dataset = "https://huggingface.co/datasets/fastmachinelearning/wa-hls4ml"
+
 [tool.setuptools.packages.find]
 where = ["src"]
