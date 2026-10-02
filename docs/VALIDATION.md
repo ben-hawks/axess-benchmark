@@ -86,6 +86,11 @@ resolved here.
 
 ## 5. History: the original (HLS-estimate) checkpoints
 
+Paper references below are to the published article (ACM TRETS 19(2), 2026,
+doi:10.1145/3787490). Its section, equation, table and figure numbering is the same as
+the arXiv preprint's, and every Table 4 value quoted here was checked against the
+published table.
+
 The checkpoints behind paper Table 4 (`gnn_final_model.pth`, and
 `transformer_best_model.pt` at wa_hls4ml_models@4aff94b) were reference solutions in
 this repo until the retrain release. What was established about them:

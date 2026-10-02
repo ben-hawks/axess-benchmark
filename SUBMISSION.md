@@ -1,7 +1,7 @@
 # Submission Report: {{SOLUTION_NAME}} on wa-hls4ml
 
 Adapted directly from the paper's own three-tier submission guidelines
-(arXiv:2511.05615, Section 3.1) — Fill in the sections below for a new resource/latency
+(Hawks et al., ACM TRETS 19(2), 2026, doi:10.1145/3787490, Section 3.1) — Fill in the sections below for a new resource/latency
 surrogate model submitted against this benchmark.
 
 ## Required

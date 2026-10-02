@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Score predictions against the wa-hls4ml benchmark's 6 regression targets.
 
-Implements paper Section 3.2, Eq. 1-4 (arXiv:2511.05615): R^2, SMAPE (epsilon = 1, the
+Implements paper Section 3.2, Eq. 1-4 (Hawks et al., ACM TRETS 2026, doi:10.1145/3787490): R^2, SMAPE (epsilon = 1, the
 smallest strictly positive value the integer resource/latency counts can take), RMSE, and
 a per-target relative-percent-error (RPE) box plot.
 
@@ -33,7 +33,7 @@ SUBSET_GROUP = {"2_20": "dense", "2layer": "dense", "3layer": "dense", "latency"
 
 
 def r_squared(y_true, y_pred):
-    """Eq. 1. NaN when y_true has zero variance (paper Table 5's "N/A*")."""
+    """Eq. 1. NaN when y_true has zero variance (paper Table 5's "N/A" with footnote a)."""
     y_true = np.asarray(y_true, dtype=float)
     y_pred = np.asarray(y_pred, dtype=float)
     ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
