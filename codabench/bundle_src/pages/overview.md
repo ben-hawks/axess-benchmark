@@ -7,13 +7,14 @@ numbers from HLS and logic synthesis takes minutes to hours per design, which is
 slow for a codesign loop that explores many candidates.
 
 **The task:** given a Keras/QKeras network (`model_config`) and its hls4ml conversion
-configuration (`hls_config`), predict what logic synthesis reports:
+configuration (`hls_config`), predict the resources logic synthesis reports and the
+latency HLS estimates:
 
 | Target | Meaning |
 |---|---|
 | `BRAM`, `DSP`, `FF`, `LUT` | post-logic-synthesis resource counts (BRAM can be fractional: a BRAM18 counts as 0.5) |
-| `cycles_max` | latency, in clock cycles |
-| `interval_max` | initiation interval, in clock cycles |
+| `cycles_max` | latency, in clock cycles (HLS estimate) |
+| `interval_max` | initiation interval, in clock cycles (HLS estimate) |
 
 A good surrogate model answers in milliseconds instead of hours, without running any
 part of the synthesis flow.

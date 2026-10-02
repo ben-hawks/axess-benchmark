@@ -16,7 +16,7 @@ surrogate model submitted against this benchmark.
       `python -m wa_hls4ml_bench.score`) writes these as `rpe_boxplot.png`.
 - [ ] **Metric table**: R², SMAPE, and RMSE (paper Eq. 1-3), computed exactly
       as specified in the benchmark card (`README.md` Section 3) against the
-      post-synthesis ground truth,
+      ground truth (post-synthesis resources, HLS latency),
       reported per target variable, for both the test set and the exemplar
       set.
 

@@ -1,5 +1,5 @@
 {
-  "label_source": "resource_report (post-synthesis) + latency_report",
+  "label_source": "resource_report (post-synthesis) + latency_report (HLS estimate)",
   "n_train_samples": 433676,
   "feature_keys": [
     "d_in1",

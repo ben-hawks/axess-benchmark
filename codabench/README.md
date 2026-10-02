@@ -2,7 +2,7 @@
 
 A results-submission Codabench bundle for this benchmark. Participants run their model
 offline and upload predictions for both the test and exemplar splits. Codabench scores
-them against the hidden post-synthesis ground truth, using the same metrics as
+them against the hidden ground truth (post-synthesis resources, HLS-estimate latency), using the same metrics as
 `src/wa_hls4ml_bench/score.py`.
 
 | | |

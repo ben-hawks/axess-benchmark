@@ -14,7 +14,7 @@ for split in $WA_SPLITS; do
     for pred in "$dir"/predictions_*.csv; do
         name=$(basename "$pred" .csv); name=${name#predictions_}
         python -m wa_hls4ml_bench.score --pred "$pred" --truth "$dir/truth.csv" \
-            --out "$dir/$name" --title "$name on $split (post-synthesis ground truth)" > /dev/null
+            --out "$dir/$name" --title "$name on $split (ground truth: post-synthesis resources, HLS latency)" > /dev/null
         echo "scored $split/$name"
     done
 done

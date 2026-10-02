@@ -3,7 +3,8 @@
     python -m wa_hls4ml_bench.truth --cache $WA_CACHE/test.npz --out results/test/truth.csv
 
 ``--gt post_synthesis`` (default) is the official benchmark ground truth
-(``resource_report`` + ``latency_report``). ``--gt hls_estimate`` writes the
+(post-synthesis ``resource_report`` + HLS-estimate ``latency_report``; the name refers
+to the resource labels, the dataset has no post-synthesis latency). ``--gt hls_estimate`` writes the
 C-synthesis labels the paper's original (pre-retrain) GNN/Transformer checkpoints were
 trained on; it exists only for checking such models (docs/VALIDATION.md section 5) and is
 not a benchmark result.

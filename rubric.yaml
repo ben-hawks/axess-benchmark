@@ -21,6 +21,11 @@ notes: >
   HLS-estimate checkpoints and are not reproduced by the reference solutions here
   (documented, docs/VALIDATION.md section 5); (3) the GNN handles the 119 Bipc exemplar
   samples, which need a feature fallback, badly.
+  2026-10-02 (later): documentation corrected so it no longer calls latency_report
+  post-synthesis. Per the dataset card it holds HLS (C-synthesis) latency estimates; only
+  BRAM/DSP/FF/LUT are post-logic-synthesis. No scores or items change: the benchmark
+  always scored latency against latency_report, and the task and output definitions
+  already named it.
 
 # --- Category 1: Software Environment (1 point per true item, max 5) ---
 software_environment:

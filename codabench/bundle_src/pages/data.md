@@ -5,7 +5,7 @@ The dataset is public on HuggingFace:
 (CC-BY-NC 4.0). Full Vivado/Vitis projects for every sample are in
 [wa-hls4ml-projects](https://huggingface.co/datasets/fastmachinelearning/wa-hls4ml-projects).
 
-| Split | Samples | Scored (have post-synthesis results) | Use |
+| Split | Samples | Scored (have a post-synthesis resource report) | Use |
 |---|---|---|---|
 | `train/` | 478,216 | — | training |
 | `val/` | 102,472 | — | validation |
@@ -25,7 +25,7 @@ set is a single file covering 7 real architectures.
 | `hls_config` | **input**: hls4ml configuration (precision, reuse factor, strategy, I/O type) |
 | `target_part`, `vivado_version`/`backend_version`, `hls4ml_version` | **input**: fixed constraints (FPGA part, toolchain versions) |
 | `resource_report` | **ground truth** for BRAM, DSP, FF, LUT (post-logic-synthesis) |
-| `latency_report` | **ground truth** for `cycles_max`, `interval_max` |
+| `latency_report` | **ground truth** for `cycles_max`, `interval_max` (an HLS C-synthesis estimate; the dataset has no post-synthesis latency) |
 | `hls_resource_report` | HLS C-synthesis estimate. **Not** ground truth, and not a valid model input |
 
 Predictions must come from `model_config`, `hls_config` and the constraint fields only.
