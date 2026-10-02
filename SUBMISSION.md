@@ -4,6 +4,12 @@ Adapted directly from the paper's own three-tier submission guidelines
 (Hawks et al., ACM TRETS 19(2), 2026, doi:10.1145/3787490, Section 3.1) — Fill in the sections below for a new resource/latency
 surrogate model submitted against this benchmark.
 
+**How a model plugs in:** a participant's model plugs in by writing its prediction files
+(`predictions_<name>.csv` for the test and exemplar splits) and re-running
+`scripts/score_all.sh`; nothing else changes. That one step scores it next to the
+reference solutions and writes its upload-ready Codabench submission
+(`<results>/codabench/<name>_submission.zip`).
+
 ## Required
 
 - [ ] **Predicted values** for each of the 6 FPGA metrics (BRAM, DSP, FF,
@@ -71,7 +77,8 @@ _(embed or link `<results>/{test,exemplar}/<name>/rpe_boxplot.png`)_
 
 ```bash
 # exact commands to regenerate this report's numbers from a clean environment
-# place predictions_<name>.csv under $WA_RESULTS/test/ and $WA_RESULTS/exemplar/, then:
-source perlmutter/env.sh && wa_activate_torch
+# place predictions_<name>.csv under $WA_RESULTS/test/ and $WA_RESULTS/exemplar/, then
+# (on a cluster: source slurm/env.sh && wa_activate first):
 bash scripts/score_all.sh
+# -> $WA_RESULTS/<split>/<name>/METRICS.md, LEADERBOARD.md, codabench/<name>_submission.zip
 ```

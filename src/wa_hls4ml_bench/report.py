@@ -56,15 +56,47 @@ def build(results_dir: str) -> str:
     return "\n".join(lines)
 
 
+def build_timings(results_dir: str) -> str | None:
+    """All <split>/predictions_<model>.timing.json (written by predict.py) as one table."""
+    rows = []
+    for path in sorted(glob.glob(os.path.join(results_dir, "*", "predictions_*.timing.json"))):
+        with open(path) as f:
+            rows.append(json.load(f))
+    if not rows:
+        return None
+    lines = ["# Inference timings", "",
+             "Written by `predict.py` for each model and split. *Total* covers the whole command "
+             "(loading weights and data, featurization, writing the CSV); *model* is time inside "
+             "the model only (synchronized on GPU).", "",
+             "| Split | Model | Device | Hardware | Samples | Total [s] | Total [ms/sample] "
+             "| Model [s] | Model [ms/sample] | Batch | Slurm job | Host | Finished |",
+             "|---" * 13 + "|"]
+    for r in rows:
+        model = f"*{r['model']} (auxiliary)*" if r["model"] in AUXILIARY else r["model"]
+        lines.append(
+            f"| {r['split']} | {model} | {r['device']} | {r['hardware']} | {r['n_samples']} "
+            f"| {r['seconds_total']:.1f} | {r['ms_per_sample_total']:.3f} | {r['seconds_model']:.1f} "
+            f"| {r['ms_per_sample_model']:.4f} | {r.get('batch_size') or ''} | {r.get('slurm_job_id') or ''} "
+            f"| {r.get('host', '')} | {r.get('finished', '')} |")
+    return "\n".join(lines) + "\n"
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--results", required=True)
     p.add_argument("--out", required=True)
+    p.add_argument("--timings-out", help="also write the inference-timing table here (if any timings exist)")
     args = p.parse_args(argv)
     md = build(args.results)
     with open(args.out, "w", encoding="utf-8") as f:
         f.write(md)
     print(md)
+    if args.timings_out:
+        timings = build_timings(args.results)
+        if timings:
+            with open(args.timings_out, "w", encoding="utf-8") as f:
+                f.write(timings)
+            print(f"(timings written to {args.timings_out})")
 
 
 if __name__ == "__main__":

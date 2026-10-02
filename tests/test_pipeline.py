@@ -17,7 +17,7 @@ import pytest
 from wa_hls4ml_bench import cache as C
 from wa_hls4ml_bench import data as D
 from wa_hls4ml_bench import score as S
-from wa_hls4ml_bench.truth import truth_frame
+from wa_hls4ml_bench.truth import frame_from_cache
 
 HERE = os.path.dirname(__file__)
 FIXTURES = os.path.join(HERE, "fixtures", "data")
@@ -51,7 +51,7 @@ def test_cache_contents(caches):
 
 
 def test_truth_excludes_missing(caches):
-    tf = truth_frame(caches["test"], D.POST_SYNTHESIS)
+    tf = frame_from_cache(caches["test"], D.POST_SYNTHESIS)
     assert np.isfinite(tf[D.TARGETS].to_numpy()).all()
     assert len(tf) == int(np.isfinite(caches["test"].truth_post[:, 0]).sum())
 
@@ -72,6 +72,6 @@ def test_matches_golden_predictions(caches, model, split):
     assert list(got.index) == list(want.index)
     np.testing.assert_allclose(got[D.TARGETS].to_numpy(), want[D.TARGETS].to_numpy(), rtol=2e-3, atol=1e-2)
 
-    tf = truth_frame(caches[split], D.POST_SYNTHESIS)
+    tf = frame_from_cache(caches[split], D.POST_SYNTHESIS)
     res = S.score(tf, got.reset_index())
     assert res["coverage"]["n_truth_without_prediction"] == 0

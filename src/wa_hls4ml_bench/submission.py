@@ -27,20 +27,14 @@ import numpy as np
 import pandas as pd
 
 from . import data as D
-from .cache import SplitCache
-from .truth import truth_frame
+from .truth import scored_ids  # the benchmark's single truth function (re-exported here)
 
 SPLITS = ("test", "exemplar")
-COLUMNS = ["sample_id"] + D.TARGETS
+COLUMNS = ["sample_id"] + D.OUTPUT_COLUMNS
 
 
 class SubmissionError(ValueError):
     pass
-
-
-def scored_ids(cache_dir: str, split: str) -> pd.Series:
-    cache = SplitCache(os.path.join(cache_dir, f"{split}.npz"))
-    return truth_frame(cache, D.POST_SYNTHESIS)["sample_id"]
 
 
 def select_scored(pred: pd.DataFrame, ids: pd.Series, label: str) -> pd.DataFrame:

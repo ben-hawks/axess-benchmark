@@ -3,16 +3,49 @@
   "source_commit": "ac394e9df3c774ada57406f6c45b910e9249314e",
   "files": {
     "gnn_resource_report_final_model.pth": {
+      "role": "reference",
       "url": "https://github.com/ben-hawks/wa_hls4ml_models/releases/download/resource-report-retrain/gnn_resource_report_final_model.pth",
       "sha256": "ac8bbfbf766898412271298b3f39318f3a3e522d62febaeb68bdb85d8fea2b0c",
       "bytes": 217909055,
       "model": "FPGA_GNN_GATv2 (5 x GATv2, 5 heads, hidden 512), retrained on post-synthesis resource_report labels; early-stopped at epoch 105 of 200, best epoch 65"
     },
     "transformer_resource_report_final_model.pt": {
+      "role": "reference",
       "url": "https://github.com/ben-hawks/wa_hls4ml_models/releases/download/resource-report-retrain/transformer_resource_report_final_model.pt",
       "sha256": "5e8726c397d0e11077cd5face11b8ea2751860987b317c7dec379cd5f07494d2",
       "bytes": 12821496,
       "model": "TransformerRegressor (2 blocks, 8 heads, d=512), retrained on post-synthesis resource_report labels; best epoch 197 of 200. Identical to resource_report_results/transformer/model.pt at the source commit"
     }
-  }
+  },
+  "bundled": {
+    "mlp": {
+      "role": "reference",
+      "package": "rule4ml==0.2.0",
+      "path_in_package": "rule4ml/models/weights/v2/mlp/",
+      "model": "rule4ml baseline MLP: 6 per-target Keras MLPs (paper section 4.1), trained on post-synthesis labels; run by wa_hls4ml_bench --model mlp",
+      "sha256": {
+        "BRAM.weights.h5": "1cdcffcc725f835ddfbd6cf823d4172a433b40a96abb83956244fb49aa689404",
+        "CYCLES.weights.h5": "a00d6b90af8c1e580bc7bf25a71858f7394908ab3fc91270576cae91b7f43bbc",
+        "DSP.weights.h5": "dc4fade06297a1022fdf7ae90faff1e661d5626d53b6b7edf4111f59214d62d6",
+        "FF.weights.h5": "aa2090886bc5772ee0844071fe85ea1d006f48f60e70e44ed7c7208bc6df3ace",
+        "INTERVAL.weights.h5": "c0b57e892ae8c9fa76186ee6cdafacc2218d59ae575330c4b00f0be597acb6f6",
+        "LUT.weights.h5": "d377194891cc90e9c957ddc7cb25aa0ab043d235c23195147392093a1a87a25f"
+      }
+    },
+    "rule4ml_gnn": {
+      "role": "auxiliary",
+      "package": "rule4ml==0.2.0",
+      "path_in_package": "rule4ml/models/weights/v2/gnn/",
+      "model": "rule4ml's own GIN-based GNN (6 per-target models). Auxiliary: a different architecture from the paper's GATv2 GNN, run for comparison only",
+      "sha256": {
+        "BRAM.weights.pt": "3c01388259796dd74b24fd9270ffabec7e14f45e85cdc4d4ef039b8eb3034363",
+        "CYCLES.weights.pt": "4e423d168b6b8d2e1534e551ed247ebed35380b3360b92f781f588f179b0a92a",
+        "DSP.weights.pt": "cbdf13a67fc9d6907ae666cd93ace1f58aa45b1d6307a3cd115297fc6e12a9a2",
+        "FF.weights.pt": "e7a8ebd1f7eabad8327f0aae1af5e22bfe774b7453b55f719ec1db902ff1268e",
+        "INTERVAL.weights.pt": "d27e72b75c74ec56aa1b3222d6af278df0061b6ae45d5107dd779d127c2d6bcb",
+        "LUT.weights.pt": "17a8b6f4eb358c5105e893ed35c27b1e96809d5596ee95bc0315e5d40a61a82c"
+      }
+    }
+  },
+  "bundled_note": "Weights that ship inside a pip package and are installed by requirements-mlp.txt, not downloaded by scripts/fetch_weights.py. Hashes were taken from an installed rule4ml 0.2.0 on 2026-10-02."
 }

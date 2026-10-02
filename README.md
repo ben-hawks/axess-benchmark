@@ -17,19 +17,53 @@ benchmark is described in *wa-hls4ml: A Benchmark and Surrogate Models for hls4m
 Resource and Latency Estimation* (Hawks et al., ACM TRETS 19(2), 2026,
 [doi:10.1145/3787490](https://doi.org/10.1145/3787490); preprint arXiv:2511.05615).
 
-## Quick start (Perlmutter)
+## Quick start
+
+**On a Slurm cluster** (generic scripts in `slurm/`, tuned per machine by a profile;
+NERSC Perlmutter is set up, see [docs/PERLMUTTER.md](docs/PERLMUTTER.md)):
 
 ```bash
 git clone https://github.com/ben-hawks/axess-benchmark.git && cd axess-benchmark
-bash perlmutter/setup.sh                          # login node: venvs, dataset, weights
-bash perlmutter/submit.sh -A <nersc_project>      # featurize -> infer (GPU + CPU) -> score
+bash slurm/setup.sh                          # login node: venvs, dataset, weights
+bash slurm/submit.sh -A <nersc_project>      # featurize -> infer (GPU + CPU) -> score
 cat $SCRATCH/wa-hls4ml/results/LEADERBOARD.md
 ```
 
-Full instructions, paths, and troubleshooting are in [docs/PERLMUTTER.md](docs/PERLMUTTER.md).
-The same commands work anywhere with a Python 3.10+ env. Install torch, then
-`pip install -r requirements.txt` (plus `requirements-mlp.txt` in a separate env for the
-MLP), and run the module commands shown in PERLMUTTER.md "Running interactively".
+For another cluster, copy `slurm/profiles/generic.sh` to `slurm/profiles/<machine>.sh`,
+fill it in, and prefix the commands with `WA_MACHINE=<machine>`.
+
+**On a single machine** (Linux/macOS shell, Python 3.10+; the GNN and Transformer run
+on a CPU in a few minutes, faster on a GPU):
+
+```bash
+git clone https://github.com/ben-hawks/axess-benchmark.git && cd axess-benchmark
+python -m venv .venv && source .venv/bin/activate
+pip install torch            # pick the build for your CUDA (or CPU) from pytorch.org
+pip install -r requirements.txt
+export PYTHONPATH=$PWD/src WA_DATA=$PWD/run/data WA_CACHE=$PWD/run/cache \
+       WA_WEIGHTS=$PWD/run/weights WA_RESULTS=$PWD/run/results
+python scripts/fetch_data.py --out $WA_DATA
+python scripts/fetch_weights.py --out $WA_WEIGHTS
+for s in test exemplar; do
+    python -m wa_hls4ml_bench.cache --data-root $WA_DATA --split $s --cache-dir $WA_CACHE
+    for m in gnn transformer; do
+        python -m wa_hls4ml_bench.predict --model $m --cache-dir $WA_CACHE --split $s \
+            --weights-dir $WA_WEIGHTS --out $WA_RESULTS/$s/predictions_$m.csv
+    done
+done
+bash scripts/score_all.sh    # LEADERBOARD.md, TIMINGS.md, Codabench zips in run/results
+```
+
+The rule4ml baseline MLP and auxiliary GNN need TensorFlow, so they go in a second venv
+(`pip install -r requirements-mlp.txt`) and run with
+`python -m wa_hls4ml_bench.predict --model mlp --data-root $WA_DATA --split <split> --out ...`
+(and `--model rule4ml_gnn`).
+
+**Scoring your own model:** write `predictions_<name>.csv` for each split (see
+[SUBMISSION.md](SUBMISSION.md)) into the results folder and re-run `score_all.sh`. A
+participant's model plugs in by writing its prediction files and re-running
+`score_all.sh`; nothing else changes. The same step writes the model's upload-ready
+Codabench submission.
 
 ---
 
@@ -128,7 +162,10 @@ How the inference path was verified (per-sample agreement with the release's own
 predictions): [docs/VALIDATION.md](docs/VALIDATION.md).
 
 **Reference results** (ground truth: post-synthesis resources, HLS latency;
-[reference_results/](reference_results/LEADERBOARD.md); per-group tables in each `METRICS.md`):
+[reference_results/](reference_results/LEADERBOARD.md); per-group tables in each `METRICS.md`).
+Run on 2026-10-02 on a Windows workstation CPU (Intel, 32 threads); a full NERSC Perlmutter
+run the same day (NVIDIA A100 for the GNN and Transformer) reproduced every metric to
+≤2.4e-4 relative (docs/VALIDATION.md §7):
 
 | Test, R^2 (n = 92,933) | BRAM | DSP | FF | LUT | Cycles | II | mean |
 |---|---|---|---|---|---|---|---|
@@ -163,13 +200,14 @@ problem this benchmark measures.
 
 ## 5. Documentation and reproducible protocol
 
-1. `bash perlmutter/setup.sh`: pinned environments (`requirements*.txt` on top of a NERSC
-   PyTorch module), dataset snapshot with its revision recorded, weights checked by
-   sha256 against [weights/MANIFEST.json](weights/MANIFEST.json).
+1. `bash slurm/setup.sh`: pinned environments (`requirements*.txt`, on top of a site
+   PyTorch module where the machine profile names one), dataset snapshot with its revision
+   recorded, weights checked by sha256 against [weights/MANIFEST.json](weights/MANIFEST.json).
 2. `python -m pytest tests`: golden-output check of the checkpoints and preprocessing on
    40 real fixture samples.
-3. `bash perlmutter/submit.sh -A <project>`: featurize, infer, and score, producing
-   `LEADERBOARD.md`, per-model `METRICS.md`, `metrics.json`, and RPE plots.
+3. `bash slurm/submit.sh -A <project>`: featurize, infer, and score, producing
+   `LEADERBOARD.md`, `TIMINGS.md`, per-model `METRICS.md`, `metrics.json`, RPE plots, and
+   a Codabench submission zip per model.
 4. Compare against [reference_results/](reference_results/LEADERBOARD.md).
 
 The normalization statistics and prediction caps the checkpoints need are shipped in

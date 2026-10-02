@@ -24,11 +24,16 @@ per-group tables in `../reference_results/<split>/<model>/METRICS.md`.
 | Output post-processing | none | `exp(y·σ + μ) − shift`, clamp at 0, **cap at the largest training label** | same as GNN | none |
 | Parameters | small (per-target MLPs) | 54.5 M | 3.2 M | small (per-target GNNs) |
 | Inference hardware | CPU (TensorFlow) | CPU or 1 GPU | CPU or 1 GPU | CPU (torch) |
-| Measured cost (Windows workstation CPU, incl. featurization) | ~58 ms/sample (exemplar)* | 1.1 ms/sample (test) | 0.16 ms/sample (test) | ~22 ms/sample (exemplar)* |
+| Measured cost, Perlmutter (test split, 102,484 samples, whole command) | 376.5 s = 3.7 ms/sample (32 CPU cores) | 30.1 s = 0.29 ms/sample (NVIDIA A100-SXM4-40GB) | 11.0 s = 0.11 ms/sample (A100) | 900.7 s = 8.8 ms/sample (32 CPU cores) |
+| Measured cost, workstation CPU (test split; model only in brackets) | — | 100.4 s = 0.98 ms/sample (0.87) | 16.2 s = 0.16 ms/sample (0.09) | — |
 
-\*rule4ml cost is dominated by per-sample feature parsing and framework startup, and
-amortizes over larger splits. GPU timings on Perlmutter will be recorded on the first
-run.
+The Perlmutter numbers come from the 2026-10-02 run's job logs (`wa-infer-gpu-59209566.out`,
+`wa-infer-rule4ml-59209567.out`). They cover the whole command: loading weights and the
+cache, featurization, inference, writing the CSV. Model-only time on the GPU wasn't
+recorded then; since 2026-10-02 every run writes it to `<results>/TIMINGS.md`
+(`predict.py`'s `.timing.json` files), split into total and model-only time. The workstation
+row is from an Intel CPU with 32 threads, run the same day. The rule4ml models spend most
+of their time in per-sample feature parsing, not in the networks.
 
 **Why rule4ml's GNN is auxiliary.** It is a different architecture from the paper's GNN
 (GIN rather than GATv2) and isn't part of the paper's reference ladder. It's included

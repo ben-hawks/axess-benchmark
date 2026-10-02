@@ -48,7 +48,7 @@ software_environment:
   - id: env_specified
     description: "The environment is either containerized, or environment details and setup instructions are provided."
     met: true
-    evidence: "requirements.txt / requirements-mlp.txt / pyproject.toml; perlmutter/setup.sh builds both venvs on a named NERSC pytorch module; docs/PERLMUTTER.md."
+    evidence: "requirements.txt / requirements-mlp.txt / pyproject.toml; slurm/setup.sh builds both venvs per machine profile (slurm/profiles/perlmutter.sh: named NERSC pytorch module); docs/PERLMUTTER.md."
 
 # --- Category 2: Problem Specification and Constraints (1 point per true item, max 5) ---
 problem_specification:

@@ -139,7 +139,8 @@ TensorFlow environment).
 
 ### Perlmutter run (2026-10-02)
 
-The full workflow (`perlmutter/submit.sh`: featurize, GPU inference for the GNN and
+The full workflow (`perlmutter/submit.sh`, since reorganized as `slurm/submit.sh` with a
+Perlmutter profile: featurize, GPU inference for the GNN and
 Transformer, CPU inference for the rule4ml models, scoring) ran on NERSC Perlmutter as
 Slurm jobs 59209565–59209568 (account amsc011). All four completed with exit 0, and the
 score job logged no errors. It used the retrained `*_resource_report_final_model.*`
@@ -156,3 +157,17 @@ So the GPU run on Perlmutter reproduces the CPU reference results to within
 floating-point differences. These numbers come from the report of the Claude session
 that ran the jobs; the run's outputs are under the user's `$SCRATCH` on Perlmutter,
 not in this repository.
+
+Timings from the same jobs' logs (whole command: loading, featurization, inference,
+writing the CSV):
+
+| Job | Model | Test split (102,484) | Exemplar (887) |
+|---|---|---|---|
+| 59209565 featurize, 64 CPU cores | — | 20.7 s | 0.6 s |
+| 59209566 infer-gpu, NVIDIA A100-SXM4-40GB | GNN | 30.1 s (0.29 ms/sample) | 6.9 s |
+| | Transformer | 11.0 s (0.11 ms/sample) | 3.3 s |
+| 59209567 infer-rule4ml, 32 CPU cores | MLP | 376.5 s (3.7 ms/sample) | 13.6 s |
+| | rule4ml GNN (auxiliary) | 900.7 s (8.8 ms/sample) | 17.0 s |
+
+The exemplar times are dominated by fixed startup cost. Model-only GPU time wasn't
+logged by that run; later runs write it to `<results>/TIMINGS.md`.

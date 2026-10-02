@@ -46,7 +46,9 @@ def fail(msg):
     sys.exit(1)
 
 
-# The submission must provide exactly these files at the root of its zip.
+# The submission contract: these files at the root of the zip. The validator reads this
+# constant without importing the program.
+SUBMISSION_FILES = ["predictions_test.csv", "predictions_exemplar.csv"]
 PREDICTION_FILES = {
     "test": os.path.join(prediction_dir, "predictions_test.csv"),
     "exemplar": os.path.join(prediction_dir, "predictions_exemplar.csv"),

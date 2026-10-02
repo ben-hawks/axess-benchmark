@@ -38,11 +38,33 @@ def test_score_groups_and_coverage():
     assert res["groups"]["all"]["LUT"]["r_squared"] == 1.0
 
 
-def test_score_rejects_nan_predictions():
+def test_score_with_nothing_predicted_is_an_error():
+    # every row marked missing leaves nothing to score
     truth = _frame(["a"], ["3layer"], [1.0])
     pred = _frame(["a"], ["3layer"], [np.nan])
     try:
         S.score(truth, pred)
     except ValueError:
         return
-    raise AssertionError("NaN predictions must be rejected")
+    raise AssertionError("scoring with no usable predictions must fail")
+
+
+def test_rows_marked_missing_count_as_no_prediction():
+    # predict.py writes an all-empty row for a sample the model couldn't handle
+    truth = _frame(["a", "b", "c"], ["3layer"] * 3, [1.0, 2.0, 3.0])
+    pred = _frame(["a", "b", "c"], ["3layer"] * 3, [1.0, 2.0, 3.0])
+    pred.loc[2, S.TARGETS] = np.nan
+    res = S.score(truth, pred)
+    assert res["coverage"]["n_truth_without_prediction"] == 1
+    assert res["coverage"]["n_scored"] == 2
+
+
+def test_partly_empty_row_is_rejected():
+    truth = _frame(["a", "b"], ["3layer"] * 2, [1.0, 2.0])
+    pred = _frame(["a", "b"], ["3layer"] * 2, [1.0, 2.0])
+    pred.loc[1, "LUT"] = np.nan
+    try:
+        S.score(truth, pred)
+    except ValueError:
+        return
+    raise AssertionError("a row with some outputs missing must be rejected")

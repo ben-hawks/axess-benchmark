@@ -3,7 +3,7 @@
 Parsing the JSON and running the vendored feature extractor is the slow part of
 inference (~1 ms/sample), so every model reads this cache rather than re-parsing JSON.
 
-    python -m wa_hls4ml_bench.cache --data-root $WA_DATA --split test --out $WA_CACHE/test.npz
+    python -m wa_hls4ml_bench.cache --data-root $WA_DATA --split test --cache-dir $WA_CACHE
 
 Cache contents (N samples, T = total layers across samples):
     sample_id  (N,)   str    meta_data.uuid
@@ -55,6 +55,11 @@ def _process(item):
         [th[t] for t in D.TARGETS] if th else nan6,
         [tt[t] for t in D.TARGETS] if tt else nan6,
     )
+
+
+def cache_path(cache_dir: str, split: str) -> str:
+    """Where a split's cache lives inside a cache directory."""
+    return os.path.join(cache_dir, f"{split}.npz")
 
 
 def build_cache(data_root: str, split: str, out_path: str, workers: int = 1) -> dict:
@@ -141,12 +146,16 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--data-root", required=True, help="local copy of fastmachinelearning/wa-hls4ml")
     p.add_argument("--split", required=True, choices=D.SPLITS)
-    p.add_argument("--out", required=True)
+    p.add_argument("--cache-dir", help="write <cache-dir>/<split>.npz")
+    p.add_argument("--out", help="explicit cache file (alternative to --cache-dir)")
     p.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     args = p.parse_args(argv)
+    if not (args.cache_dir or args.out):
+        p.error("give --cache-dir (or --out FILE)")
     logging.basicConfig(level=logging.ERROR)
     _quiet()
-    build_cache(args.data_root, args.split, args.out, args.workers)
+    out = args.out or cache_path(args.cache_dir, args.split)
+    build_cache(args.data_root, args.split, out, args.workers)
 
 
 if __name__ == "__main__":

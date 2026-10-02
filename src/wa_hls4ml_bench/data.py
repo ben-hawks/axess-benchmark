@@ -17,8 +17,9 @@ import ijson
 
 SPLITS = ("train", "val", "test", "exemplar")
 
-# Benchmark target columns, in the order every CSV in this package uses.
-TARGETS = ["BRAM", "DSP", "FF", "LUT", "cycles_max", "interval_max"]
+# Output columns of every prediction and truth file, in order (sample_id comes first).
+OUTPUT_COLUMNS = ["BRAM", "DSP", "FF", "LUT", "cycles_max", "interval_max"]
+TARGETS = OUTPUT_COLUMNS  # older name, kept so existing code and scripts keep working
 
 # Paper Table 4 groups the synthetic test subsets into dense / conv1d / conv2d.
 SUBSET_GROUP = {

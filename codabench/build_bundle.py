@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "src"))
 
 from wa_hls4ml_bench import data as D  # noqa: E402
 from wa_hls4ml_bench.cache import SplitCache  # noqa: E402
-from wa_hls4ml_bench.truth import truth_frame  # noqa: E402
+from wa_hls4ml_bench.truth import truth_frame  # noqa: E402  (the benchmark's single truth function)
 
 SPLITS = ("test", "exemplar")
 COLUMNS = ["sample_id"] + D.TARGETS
@@ -90,7 +90,7 @@ def main():
 
     solution_files, baseline_files = [], []
     for split in SPLITS:
-        truth = truth_frame(SplitCache(os.path.join(args.cache_dir, f"{split}.npz")), D.POST_SYNTHESIS)
+        truth = truth_frame(args.cache_dir, split)
         truth.to_csv(os.path.join(bundle, "reference_data", f"truth_{split}.csv"), index=False)
         truth[["sample_id"]].to_csv(os.path.join(bundle, "starting_kit", f"{split}_sample_ids.csv"), index=False)
 

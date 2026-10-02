@@ -74,6 +74,10 @@ def group_of(subset: str) -> str:
 
 
 def score(truth: pd.DataFrame, pred: pd.DataFrame) -> dict:
+    # A row with every output empty is how predict.py marks a sample the model couldn't
+    # handle: it counts as a missing prediction (coverage), not as an invalid value.
+    marked_missing = pred[TARGETS].isna().all(axis=1)
+    pred = pred[~marked_missing]
     missing = sorted(set(truth.sample_id) - set(pred.sample_id))
     extra = len(set(pred.sample_id) - set(truth.sample_id))
     merged = truth.merge(pred[["sample_id"] + TARGETS], on="sample_id", suffixes=("", "_pred"))

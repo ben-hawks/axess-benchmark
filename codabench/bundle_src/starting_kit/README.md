@@ -39,8 +39,8 @@ need, the scoring code, and Slurm workflows for NERSC Perlmutter. Its
 directly. To produce `sample_submission.zip`:
 
 ```bash
-python -m wa_hls4ml_bench.predict --model transformer --cache test.npz --out predictions_test.csv
-python -m wa_hls4ml_bench.predict --model transformer --cache exemplar.npz --out predictions_exemplar.csv
+python -m wa_hls4ml_bench.predict --model transformer --cache-dir <cache dir> --split test --out predictions_test.csv
+python -m wa_hls4ml_bench.predict --model transformer --cache-dir <cache dir> --split exemplar --out predictions_exemplar.csv
 python make_submission.py --test predictions_test.csv --exemplar predictions_exemplar.csv
 ```
 
