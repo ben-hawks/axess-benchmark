@@ -137,6 +137,22 @@ jobs (docs/PERLMUTTER.md §1). With `WA_TEST_DEVICE=cuda` it also checks GPU vs 
 agreement. The rule4ml models aren't in the golden test (they need the separate
 TensorFlow environment).
 
-**Not yet verified:** an actual Perlmutter run. The scripts were written for Perlmutter
-but executed on a Windows workstation. The first Perlmutter run should confirm `pytest`
-passes on a GPU node and that `LEADERBOARD.md` matches `reference_results/`.
+### Perlmutter run (2026-10-02)
+
+The full workflow (`perlmutter/submit.sh`: featurize, GPU inference for the GNN and
+Transformer, CPU inference for the rule4ml models, scoring) ran on NERSC Perlmutter as
+Slurm jobs 59209565–59209568 (account amsc011). All four completed with exit 0, and the
+score job logged no errors. It used the retrained `*_resource_report_final_model.*`
+checkpoints.
+
+| Check | Result |
+|---|---|
+| `pytest` on Perlmutter | 14 passed, including bit-equivalence with wa_hls4ml_models@ac394e9 |
+| Mean R², test / exemplar | transformer 0.809 / −0.517, gnn 0.780 / −1.956, rule4ml_gnn 0.549 / −1.910, mlp 0.319 / 0.248; identical to `reference_results/` at the printed precision |
+| Every `metrics.json` cell (R², SMAPE, RMSE, every group) vs `reference_results/` | coverage and sample counts identical. Max relative difference 2.4e-4 (exemplar GNN DSP R²: 0.037852 vs 0.037861, an absolute difference of about 9e-6); every other cell ≤ 2.5e-5 |
+| Codabench submissions (`python -m wa_hls4ml_bench.submission`) | exit 0. All four zips written, each with 92,933 test + 886 exemplar rows |
+
+So the GPU run on Perlmutter reproduces the CPU reference results to within
+floating-point differences. These numbers come from the report of the Claude session
+that ran the jobs; the run's outputs are under the user's `$SCRATCH` on Perlmutter,
+not in this repository.

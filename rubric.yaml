@@ -15,8 +15,9 @@ notes: >
   (reference_results/). The inference path is independently verified: per-sample
   agreement with the release's own test predictions (max rel. diff 2.8e-4), identical
   prediction-cap counts, identical reported R^2 (docs/VALIDATION.md). Caveats that do not
-  flip items but are recorded: (1) runs so far were on a Windows CPU workstation, not
-  yet on Perlmutter; (2) the paper's own Table 4 GNN/Transformer numbers come from
+  flip items but are recorded: (1) reference results were produced on a Windows CPU
+  workstation; a full Perlmutter GPU run (2026-10-02) reproduced them to within 2.4e-4
+  relative in every metric cell (docs/VALIDATION.md section 7); (2) the paper's own Table 4 GNN/Transformer numbers come from
   HLS-estimate checkpoints and are not reproduced by the reference solutions here
   (documented, docs/VALIDATION.md section 5); (3) the GNN handles the 119 Bipc exemplar
   samples, which need a feature fallback, badly.
@@ -38,7 +39,7 @@ software_environment:
   - id: code_runs_unmodified
     description: "The code does not require any modifications to run."
     met: true
-    evidence: "Full pipeline (cache -> predict x3 -> truth -> score -> leaderboard) run unmodified over the complete test and exemplar splits (reference_results/); tests/ (12 tests incl. golden predictions and bit-equivalence with upstream preprocessing) pass. Judgment call: executed on a Windows CPU workstation; the Perlmutter job scripts themselves have not yet been run (docs/VALIDATION.md section 5)."
+    evidence: "Full pipeline (cache -> predict x3 -> truth -> score -> leaderboard) run unmodified over the complete test and exemplar splits (reference_results/); tests/ (12 tests incl. golden predictions and bit-equivalence with upstream preprocessing) pass. Also run end to end as Perlmutter Slurm jobs on 2026-10-02 (exit 0; results match the reference run, docs/VALIDATION.md section 7)."
   - id: env_specified
     description: "The environment is either containerized, or environment details and setup instructions are provided."
     met: true

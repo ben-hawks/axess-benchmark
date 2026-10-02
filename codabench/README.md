@@ -44,6 +44,12 @@ models' zips pass the validator against this bundle, and Codabench's scoring pro
 reproduces their benchmark scores exactly. The Transformer's zip is identical to
 `starting_kit/sample_submission.zip`.
 
+A full run on NERSC Perlmutter (2026-10-02, jobs 59209565–59209568) packaged all four
+models the same way: exit 0, and 92,933 test + 886 exemplar rows per zip. Its scores
+match `reference_results/` to within 2.4e-4 relative in every metric cell (see
+docs/VALIDATION.md §7), so the GPU-produced zips score the same on Codabench as the
+CPU reference.
+
 ## Build
 
 After a benchmark run (docs/PERLMUTTER.md) has produced `$WA_CACHE/{train,test,exemplar}.npz`
