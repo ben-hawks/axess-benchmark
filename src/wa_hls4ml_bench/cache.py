@@ -123,7 +123,8 @@ class SplitCache:
         self.offsets = z["offsets"]
         self.truth_post = z["truth_post"]
         self.truth_hls = z["truth_hls"]
-        self.truth_train = z["truth_train"]
+        # absent in caches built before 2026-10-02; only stats.py needs it
+        self.truth_train = z["truth_train"] if "truth_train" in z.files else None
         self.feat_ok = z["feat_ok"]
 
     def __len__(self):

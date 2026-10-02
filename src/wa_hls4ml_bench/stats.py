@@ -33,6 +33,9 @@ MODELS = ("gnn", "transformer")
 
 
 def compute(train: SplitCache) -> dict:
+    if train.truth_train is None:
+        raise SystemExit("this train cache predates the truth_train column; rebuild it with "
+                         "python -m wa_hls4ml_bench.cache")
     keep = np.isfinite(train.truth_train[:, 0]) & train.feat_ok
     idx = np.nonzero(keep)[0]
     layer_rows = np.concatenate([np.arange(train.offsets[i], train.offsets[i + 1]) for i in idx])
